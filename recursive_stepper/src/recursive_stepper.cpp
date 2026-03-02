@@ -11,7 +11,6 @@ using recursive_stepper::RecursiveStepper;
 
 RecursiveStepper::RecursiveStepper(const QString &dirPath) noexcept : dirPath_(std::move(dirPath))
 {
-    
 }
 
 FilesystemIndex RecursiveStepper::BuildIndex() const
@@ -26,13 +25,9 @@ FilesystemIndex RecursiveStepper::BuildIndex() const
 
         QFileInfo info = it.fileInfo();
 
-        if (info.isDir())
+        if (info.isFile())
         {
-            index.directories.insert(info.absoluteFilePath());
-        }
-        else
-        {
-            index.files.insert(info.absoluteFilePath(), info);
+            index.append(info.absoluteFilePath());
         }
     }
 

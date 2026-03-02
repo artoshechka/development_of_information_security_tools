@@ -6,21 +6,16 @@
 #define GUID_A9769D40_774C_4FF9_A4A3_8FF1912B4011
 
 #include <QFileInfo>
-#include <QMap>
 #include <QSet>
 #include <QString>
 #include <QTextStream>
+#include <QVector>
 
 namespace recursive_stepper
 {
 
-/// @brief Структура индекса файловой системы
-struct FilesystemIndex
-{
-    QMap<QString, QFileInfo>
-        files;                 ///< Карта файловой системы, где ключ - путь до файла, а значение - информация о файле
-    QSet<QString> directories; ///< Множество директорий, найденных в процессе обхода
-};
+/// @brief Переопределение для вектора путей до файлов
+using FilesystemIndex = QVector<QString>;
 
 /// @brief Класс, реализующий рекурсивный обход директорий
 class RecursiveStepper
