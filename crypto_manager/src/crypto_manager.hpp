@@ -33,8 +33,5 @@ class CryptoManager final : public ICryptoManager
 
     /// @brief Закрытый деструктор.
     ~CryptoManager() = default;
-
-    /// @brief Запрет копирования.
-    Q_DISABLE_COPY(CryptoManager)
 };
 #endif // GUID_d77f818f_e9d1_416e_939c_72463f45c000

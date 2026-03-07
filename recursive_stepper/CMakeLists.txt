@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.16)
 project(recursive_stepper LANGUAGES CXX)
 
 add_library(${PROJECT_NAME} STATIC
@@ -14,6 +14,6 @@ target_include_directories(${PROJECT_NAME}
 )
 
 target_link_libraries(${PROJECT_NAME}
-    PUBLIC
+    PRIVATE
         Qt${QT_VERSION_MAJOR}::Core
 )
