@@ -3,6 +3,7 @@ project(crypto_manager LANGUAGES CXX)
 
 add_library(${PROJECT_NAME} STATIC
     src/crypto_manager.cpp
+    src/crypto_manager_factory.cpp
 )
 
 find_package(OpenSSL REQUIRED)
@@ -17,6 +18,5 @@ target_include_directories(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         Qt${QT_VERSION_MAJOR}::Core
-    PRIVATE 
         OpenSSL::SSL OpenSSL::Crypto
 )

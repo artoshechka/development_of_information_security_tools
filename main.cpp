@@ -1,4 +1,7 @@
-#include "crypto_manager/src/crypto_manager.hpp"
+/// @file
+/// @brief Главное приложение
+/// @author Artemenko Anton
+#include <crypto_manager_factory.hpp>
 #include <recursive_stepper.hpp>
 
 #include <QCoreApplication>
@@ -46,9 +49,10 @@ int main(int argc, char *argv[])
     cout.flush();
     QString password = cin.readLine();
 
-    recursive_stepper::RecursiveStepper stepper(path);
+    const auto &stepper = std::make_shared<recursive_stepper::RecursiveStepper>(path);
+    const auto &encoder = crypto_manager::GetCryptoManager();
 
-    auto index = stepper.BuildIndex();
+    auto index = stepper->BuildIndex();
 
     int processed = 0;
 
@@ -58,11 +62,11 @@ int main(int argc, char *argv[])
 
         if (mode == "encrypt")
         {
-            result = CryptoManager::Instance().EncryptFile(file, password);
+            result = encoder->EncryptFile(file, password);
         }
         else if (mode == "decrypt")
         {
-            result = CryptoManager::Instance().DecryptFile(file, password);
+            result = encoder->DecryptFile(file, password);
         }
         else
         {

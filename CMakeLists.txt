@@ -16,7 +16,7 @@ add_executable(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
-        Qt${QT_VERSION_MAJOR}::Core
-        recursive_stepper
-        crypto_manager
+    crypto_manager
+    recursive_stepper
+    Qt${QT_VERSION_MAJOR}::Core
 )

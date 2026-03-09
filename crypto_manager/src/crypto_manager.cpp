@@ -12,6 +12,7 @@
 #include <openssl/evp.h>
 #include <openssl/rand.h>
 
+using crypto_manager::CryptoManager;
 namespace
 {
 

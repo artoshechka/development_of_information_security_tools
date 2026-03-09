@@ -6,7 +6,8 @@
 #define GUID_d77f818f_e9d1_416e_939c_72463f45c000
 
 #include <icrypto_manager.hpp>
-
+namespace crypto_manager
+{
 /// @brief Класс менеджера криптографических операций.
 class CryptoManager final : public ICryptoManager
 {
@@ -27,6 +28,12 @@ class CryptoManager final : public ICryptoManager
     /// @return True — операция завершена успешно. Иначе - False
     bool DecryptFile(const QString &filePath, const QString &password) override;
 
+    /// @brief Копирование запрещено
+    CryptoManager(const CryptoManager &) = delete;
+
+    /// @brief Копирование запрещено
+    CryptoManager &operator=(const CryptoManager &) = delete;
+
   private:
     /// @brief Закрытый конструктор (Singleton).
     CryptoManager() = default;
@@ -34,4 +41,5 @@ class CryptoManager final : public ICryptoManager
     /// @brief Закрытый деструктор.
     ~CryptoManager() = default;
 };
+} // namespace crypto_manager
 #endif // GUID_d77f818f_e9d1_416e_939c_72463f45c000
