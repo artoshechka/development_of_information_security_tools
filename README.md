@@ -16,6 +16,11 @@
 
 ### UML диаграмма классов
 
+#### CryptoManager
+![CryptoManager](docs_pictures/CryptoManager.svg)
+
+#### RecursiveStepper
+![RecursiveStepper](docs_pictures/RecursiveStepper.svg)
 
 ## Инструкция для пользователя
 Сборка проекта производится следующим образом:
