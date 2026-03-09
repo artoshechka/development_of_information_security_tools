@@ -7,6 +7,6 @@
 std::shared_ptr<crypto_manager::ICryptoManager> crypto_manager::GetCryptoManager()
 {
     // Используем пользовательский deleter, который ничего не делает
-    return std::shared_ptr<crypto_manager::ICryptoManager>(&crypto_manager::CryptoManager::Instance(),
+    return std::shared_ptr<crypto_manager::ICryptoManager>(&crypto_manager::OpenSSLCryptoManager::Instance(),
                                                            [](crypto_manager::ICryptoManager *) {});
 }

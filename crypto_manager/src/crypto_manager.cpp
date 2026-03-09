@@ -12,7 +12,7 @@
 #include <openssl/evp.h>
 #include <openssl/rand.h>
 
-using crypto_manager::CryptoManager;
+using crypto_manager::OpenSSLCryptoManager;
 namespace
 {
 
@@ -29,13 +29,13 @@ static QByteArray deriveKey(const QString &password)
 
 } // namespace
 
-CryptoManager &CryptoManager::Instance()
+OpenSSLCryptoManager &OpenSSLCryptoManager::Instance()
 {
-    static CryptoManager instance;
+    static OpenSSLCryptoManager instance;
     return instance;
 }
 
-bool CryptoManager::EncryptFile(const QString &filePath, const QString &password)
+bool OpenSSLCryptoManager::EncryptFile(const QString &filePath, const QString &password)
 {
     QFile file(filePath);
 
@@ -107,7 +107,7 @@ bool CryptoManager::EncryptFile(const QString &filePath, const QString &password
     return true;
 }
 
-bool CryptoManager::DecryptFile(const QString &filePath, const QString &password)
+bool OpenSSLCryptoManager::DecryptFile(const QString &filePath, const QString &password)
 {
     QFile file(filePath);
 

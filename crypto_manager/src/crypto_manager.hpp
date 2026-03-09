@@ -9,12 +9,12 @@
 namespace crypto_manager
 {
 /// @brief Класс менеджера криптографических операций.
-class CryptoManager final : public ICryptoManager
+class OpenSSLCryptoManager final : public ICryptoManager
 {
   public:
     /// @brief Получить единственный экземпляр класса.
-    /// @return Ссылка на единственный экземпляр CryptoManager.
-    static CryptoManager &Instance();
+    /// @return Ссылка на единственный экземпляр OpenSSLCryptoManager.
+    static OpenSSLCryptoManager &Instance();
 
     /// @brief Выполняет шифрование файла.
     /// @param[in] filePath Полный путь к файлу для шифрования.
@@ -29,17 +29,17 @@ class CryptoManager final : public ICryptoManager
     bool DecryptFile(const QString &filePath, const QString &password) override;
 
     /// @brief Копирование запрещено
-    CryptoManager(const CryptoManager &) = delete;
+    OpenSSLCryptoManager(const OpenSSLCryptoManager &) = delete;
 
     /// @brief Копирование запрещено
-    CryptoManager &operator=(const CryptoManager &) = delete;
+    OpenSSLCryptoManager &operator=(const OpenSSLCryptoManager &) = delete;
 
   private:
     /// @brief Закрытый конструктор (Singleton).
-    CryptoManager() = default;
+    OpenSSLCryptoManager() = default;
 
     /// @brief Закрытый деструктор.
-    ~CryptoManager() = default;
+    ~OpenSSLCryptoManager() = default;
 };
 } // namespace crypto_manager
 #endif // GUID_d77f818f_e9d1_416e_939c_72463f45c000
