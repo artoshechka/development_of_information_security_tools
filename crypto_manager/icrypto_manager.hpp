@@ -6,7 +6,8 @@
 #define GUID_576efe32_b524_4693_8d65_155ffe5e24ec
 
 #include <QString>
-
+namespace crypto_manager
+{
 /// @brief Интерфейс менеджера криптографических операций.
 class ICryptoManager
 {
@@ -28,4 +29,5 @@ class ICryptoManager
     /// @return True — если операция выполнена успешно, иначе False
     virtual bool DecryptFile(const QString &filePath, const QString &password) = 0;
 };
+} // namespace crypto_manager
 #endif // GUID_576efe32_b524_4693_8d65_155ffe5e24ec
