@@ -54,16 +54,16 @@ bool OpenSSLCryptoManager::EncryptFile(const QString &filePath, const QString &p
 {
     QFile inputFile(filePath);
 
-    if (!inputFile.open(QIODevice::ReadOnly))
+    if (!inputFile.open(QIODevice::ReadWrite))
         return false;
 
-    QByteArray fileContent = inputFile.readAll();
+    const auto &fileContent = inputFile.readAll();
     inputFile.close();
 
     if (fileContent.startsWith(FILE_MAGIC_SIGNATURE))
         return false;
 
-    QByteArray encryptionKey = deriveKey(password);
+    const auto &encryptionKey = deriveKey(password);
 
     std::vector<unsigned char> initializationVector(16);
 
@@ -119,16 +119,16 @@ bool OpenSSLCryptoManager::EncryptFile(const QString &filePath, const QString &p
 bool OpenSSLCryptoManager::DecryptFile(const QString &filePath, const QString &password)
 {
     QFile inputFile(filePath);
-    if (!inputFile.open(QIODevice::ReadOnly))
+    if (!inputFile.open(QIODevice::ReadWrite))
         return false;
 
-    QByteArray fileContent = inputFile.readAll();
+    const auto &fileContent = inputFile.readAll();
     inputFile.close();
 
     if (!fileContent.startsWith(FILE_MAGIC_SIGNATURE))
         return false;
 
-    QByteArray decryptionKey = deriveKey(password);
+    const auto &decryptionKey = deriveKey(password);
 
     QByteArray initializationVector = fileContent.mid(FILE_MAGIC_SIGNATURE.size(), 16);
     QByteArray encryptedData = fileContent.mid(FILE_MAGIC_SIGNATURE.size() + 16);
