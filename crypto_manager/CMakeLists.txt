@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 project(crypto_manager LANGUAGES CXX)
 
 add_library(${PROJECT_NAME} STATIC
+    src/crypto_primitives.cpp
     src/crypto_manager.cpp
     src/crypto_manager_factory.cpp
 )
