@@ -1,7 +1,6 @@
 /// @file
-/// @brief Объявление класса для рекурсивного обхода директорий
+/// @brief Объявление класса для рекурсивного обхода директорий.
 /// @author Artemenko Anton
-#pragma once
 #ifndef GUID_A9769D40_774C_4FF9_A4A3_8FF1912B4011
 #define GUID_A9769D40_774C_4FF9_A4A3_8FF1912B4011
 
@@ -14,23 +13,23 @@
 namespace recursive_stepper
 {
 
-/// @brief Переопределение для вектора путей до файлов
+/// @brief Псевдоним для контейнера путей к файлам.
 using FileSystemIndex = QVector<QString>;
 
-/// @brief Класс, реализующий рекурсивный обход директорий
+/// @brief Класс, реализующий рекурсивный обход директорий.
 class RecursiveStepper
 {
   public:
-    /// @brief Базовый конструктор
-    /// @param[in] dirPath путь до директории для начала обхода
+    /// @brief Конструктор.
+    /// @param[in] dirPath Путь к директории, с которой начинается обход.
     RecursiveStepper(const QString &dirPath) noexcept;
 
-    /// @brief Построить индекс файловой системы
-    /// @return Индекс файловой системы
+    /// @brief Строит индекс файловой системы.
+    /// @return Список путей ко всем найденным файлам.
     FileSystemIndex BuildIndex() const;
 
   private:
-    QString dirPath_; ///< Путь до директории для начала обхода
+    QString dirPath_; ///< Путь к директории, с которой начинается обход.
 };
 
 } // namespace recursive_stepper

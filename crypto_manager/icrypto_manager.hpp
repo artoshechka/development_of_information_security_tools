@@ -1,11 +1,11 @@
 /// @file
 /// @brief Объявление интерфейса менеджера криптографических операций.
 /// @author Artemenko Anton
-#pragma once
-#ifndef GUID_576efe32_b524_4693_8d65_155ffe5e24ec
-#define GUID_576efe32_b524_4693_8d65_155ffe5e24ec
+#ifndef GUID_576EFE32_B524_4693_8D65_155FFE5E24EC
+#define GUID_576EFE32_B524_4693_8D65_155FFE5E24EC
 
 #include <QString>
+
 namespace crypto_manager
 {
 /// @brief Интерфейс менеджера криптографических операций.
@@ -19,15 +19,17 @@ class ICryptoManager
     ///
     /// @param[in] filePath Полный путь к файлу.
     /// @param[in] password Пароль, используемый для генерации ключа.
-    /// @return True — если операция выполнена успешно, иначе False
+    /// @return `true`, если операция выполнена успешно, иначе `false`.
     virtual bool EncryptFile(const QString &filePath, const QString &password) = 0;
 
     /// @brief Выполняет дешифрование файла.
     ///
     /// @param[in] filePath Полный путь к зашифрованному файлу.
     /// @param[in] password Пароль, используемый для генерации ключа.
-    /// @return True — если операция выполнена успешно, иначе False
+    /// @return `true`, если операция выполнена успешно, иначе `false`.
     virtual bool DecryptFile(const QString &filePath, const QString &password) = 0;
 };
+
 } // namespace crypto_manager
-#endif // GUID_576efe32_b524_4693_8d65_155ffe5e24ec
+
+#endif // GUID_576EFE32_B524_4693_8D65_155FFE5E24EC
