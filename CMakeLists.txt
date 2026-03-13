@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(SecureDevelopment LANGUAGES CXX)
+project(recursive_encoder LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -7,12 +7,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt5 REQUIRED COMPONENTS Core)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core)
 
-add_executable(SecureDevelopment
+add_subdirectory(recursive_stepper)
+add_subdirectory(crypto_manager)
+
+add_executable(${PROJECT_NAME}
   main.cpp
 )
-target_link_libraries(SecureDevelopment PRIVATE Qt${QT_VERSION_MAJOR}::Core)
 
-install(TARGETS SecureDevelopment
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+target_link_libraries(${PROJECT_NAME}
+    PRIVATE
+    crypto_manager
+    recursive_stepper
+    Qt${QT_VERSION_MAJOR}::Core
 )
