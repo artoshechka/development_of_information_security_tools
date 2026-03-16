@@ -8,6 +8,7 @@
 #include <QDir>
 #include <QTextStream>
 
+#include <limits>
 #include <memory>
 
 #ifdef _WIN32
@@ -125,6 +126,19 @@ int main(int argc, char *argv[])
     }
 
     QString password = ReadPassword(cin, cout);
+
+    if (password.isEmpty())
+    {
+        cerr << "Password must not be empty\n";
+        return 1;
+    }
+
+    if (password.size() > std::numeric_limits<int>::max() / 4)
+    {
+        SecureClear(password);
+        cerr << "Password is too long\n";
+        return 1;
+    }
 
     const auto &stepper = std::make_unique<recursive_stepper::RecursiveStepper>(path);
     const auto &encoder = crypto_manager::GetCryptoManager();
