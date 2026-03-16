@@ -12,11 +12,16 @@
 #include <memory>
 
 #ifdef _WIN32
-#include <windows.h>
+#define NOMINMAX
+#include <Windows.h>
+#undef EncryptFile
+#undef DecryptFile
 #else
 #include <termios.h>
 #include <unistd.h>
 #endif
+#include <algorithm>
+
 
 namespace
 {

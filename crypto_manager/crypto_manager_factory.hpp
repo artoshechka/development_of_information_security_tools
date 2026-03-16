@@ -5,6 +5,7 @@
 #define GUID_DEA1E190_A43E_4746_AAB4_44380D2D63C1
 
 #include <icrypto_manager.hpp>
+#include <memory>
 
 namespace crypto_manager
 {

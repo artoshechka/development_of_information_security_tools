@@ -10,6 +10,12 @@
 #include <QSaveFile>
 #include <QString>
 
+#ifdef _WIN32
+#define NOMINMAX
+#include <Windows.h>
+#undef EncryptFile
+#undef DecryptFile
+#endif
 #include <algorithm>
 #include <vector>
 
@@ -22,100 +28,103 @@ using namespace crypto_manager::crypto_primitives;
 namespace
 {
 
-/// @brief Безопасная запись буфера в файл с проверкой полного количества байт.
-static bool writeAll(QSaveFile &outputFile, const char *data, const qint64 size)
-{
-    return outputFile.write(data, size) == size;
-}
-
-static void secureClearVector(std::vector<unsigned char> &data)
-{
-    if (!data.empty())
+    /// @brief Безопасная запись буфера в файл с проверкой полного количества байт.
+    static bool writeAll(QSaveFile &outputFile, const char *data, const qint64 size)
     {
-        OPENSSL_cleanse(data.data(), data.size());
-        data.clear();
-    }
-}
-
-/// @brief Чтение и шифрование файла по частям.
-static bool encryptStream(QFile &inputFile, QSaveFile &outputFile, EVP_CIPHER_CTX *cipherContext)
-{
-    while (!inputFile.atEnd())
-    {
-        const QByteArray chunk = inputFile.read(kFileProcessingChunkSize);
-
-        if (chunk.isEmpty() && inputFile.error() != QFileDevice::NoError)
-        {
-            return false;
-        }
-
-        QByteArray encryptedChunk(chunk.size() + EVP_MAX_BLOCK_LENGTH, 0);
-        int outputLength = 0;
-
-        if (!EVP_EncryptUpdate(cipherContext, reinterpret_cast<unsigned char *>(encryptedChunk.data()), &outputLength,
-                               reinterpret_cast<const unsigned char *>(chunk.constData()), chunk.size()))
-        {
-            return false;
-        }
-
-        if (outputLength > 0 && !writeAll(outputFile, encryptedChunk.constData(), static_cast<qint64>(outputLength)))
-        {
-            return false;
-        }
-
+        return outputFile.write(data, size) == size;
     }
 
-    QByteArray finalChunk(EVP_MAX_BLOCK_LENGTH, 0);
-    int finalLength = 0;
-
-    if (!EVP_EncryptFinal_ex(cipherContext, reinterpret_cast<unsigned char *>(finalChunk.data()), &finalLength))
+    static void secureClearVector(std::vector<unsigned char> &data)
     {
-        return false;
-    }
-
-    if (finalLength > 0 && !writeAll(outputFile, finalChunk.constData(), static_cast<qint64>(finalLength)))
-    {
-        return false;
-    }
-
-    return true;
-}
-
-/// @brief Чтение и дешифрование файла по частям.
-static bool decryptStream(QFile &inputFile, QSaveFile &outputFile, EVP_CIPHER_CTX *cipherContext,
-                          qint64 encryptedPayloadSize)
-{
-    qint64 bytesRemaining = encryptedPayloadSize;
-
-    while (bytesRemaining > 0)
-    {
-        const qint64 bytesToRead = std::min(bytesRemaining, kFileProcessingChunkSize);
-        const QByteArray chunk = inputFile.read(bytesToRead);
-
-        if (chunk.size() != bytesToRead)
+        if (!data.empty())
         {
-            return false;
-        }
-
-        bytesRemaining -= chunk.size();
-
-        QByteArray decryptedChunk(chunk.size() + EVP_MAX_BLOCK_LENGTH, 0);
-        int outputLength = 0;
-
-        if (!EVP_DecryptUpdate(cipherContext, reinterpret_cast<unsigned char *>(decryptedChunk.data()), &outputLength,
-                               reinterpret_cast<const unsigned char *>(chunk.constData()), chunk.size()))
-        {
-            return false;
-        }
-
-        if (outputLength > 0 && !writeAll(outputFile, decryptedChunk.constData(), static_cast<qint64>(outputLength)))
-        {
-            return false;
+            OPENSSL_cleanse(data.data(), data.size());
+            data.clear();
         }
     }
 
-    return true;
-}
+    /// @brief Чтение и шифрование файла по частям.
+    static bool encryptStream(QFile &inputFile, QSaveFile &outputFile, EVP_CIPHER_CTX *cipherContext)
+    {
+        while (!inputFile.atEnd())
+        {
+            const QByteArray chunk = inputFile.read(kFileProcessingChunkSize);
+
+            if (chunk.isEmpty() && inputFile.error() != QFileDevice::NoError)
+            {
+                return false;
+            }
+
+            QByteArray encryptedChunk(chunk.size() + EVP_MAX_BLOCK_LENGTH, 0);
+            int outputLength = 0;
+
+            if (!EVP_EncryptUpdate(cipherContext, reinterpret_cast<unsigned char *>(encryptedChunk.data()), &outputLength,
+                                   reinterpret_cast<const unsigned char *>(chunk.constData()), chunk.size()))
+            {
+                return false;
+            }
+
+            if (outputLength > 0 && !writeAll(outputFile, encryptedChunk.constData(), static_cast<qint64>(outputLength)))
+            {
+                return false;
+            }
+        }
+
+        QByteArray finalChunk(EVP_MAX_BLOCK_LENGTH, 0);
+        int finalLength = 0;
+
+        if (!EVP_EncryptFinal_ex(cipherContext, reinterpret_cast<unsigned char *>(finalChunk.data()), &finalLength))
+        {
+            return false;
+        }
+
+        if (finalLength > 0 && !writeAll(outputFile, finalChunk.constData(), static_cast<qint64>(finalLength)))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /// @brief Чтение и дешифрование файла по частям.
+    static bool decryptStream(QFile &inputFile, QSaveFile &outputFile, EVP_CIPHER_CTX *cipherContext,
+                              qint64 encryptedPayloadSize)
+    {
+        qint64 bytesRemaining = encryptedPayloadSize;
+
+        while (bytesRemaining > 0)
+        {
+#ifdef _WIN32
+            const qint64 bytesToRead = (std::min)(bytesRemaining, kFileProcessingChunkSize);
+#else
+            const qint64 bytesToRead = std::min(bytesRemaining, kFileProcessingChunkSize);
+#endif
+            const QByteArray chunk = inputFile.read(bytesToRead);
+
+            if (chunk.size() != bytesToRead)
+            {
+                return false;
+            }
+
+            bytesRemaining -= chunk.size();
+
+            QByteArray decryptedChunk(chunk.size() + EVP_MAX_BLOCK_LENGTH, 0);
+            int outputLength = 0;
+
+            if (!EVP_DecryptUpdate(cipherContext, reinterpret_cast<unsigned char *>(decryptedChunk.data()), &outputLength,
+                                   reinterpret_cast<const unsigned char *>(chunk.constData()), chunk.size()))
+            {
+                return false;
+            }
+
+            if (outputLength > 0 && !writeAll(outputFile, decryptedChunk.constData(), static_cast<qint64>(outputLength)))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
 } // namespace
 
