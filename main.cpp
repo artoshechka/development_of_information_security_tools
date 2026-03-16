@@ -103,7 +103,8 @@ static void SecureClear(QString &data)
 /// @return код завершения приложения
 int main(int argc, char *argv[])
 {
-    QTextStream cin(stdin);
+    QCoreApplication app(argc, argv);
+     QTextStream cin(stdin);
     QTextStream cout(stdout);
     QTextStream cerr(stderr);
 
