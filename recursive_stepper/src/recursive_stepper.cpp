@@ -23,10 +23,7 @@ FileSystemIndex RecursiveStepper::BuildIndex() const
 
     if (!QDir(dirPath_).exists())
     {
-        if (logger_)
-        {
-            LogError(logger_) << "RecursiveStepper target directory does not exist: " << dirPath_;
-        }
+        LogError(logger_) << "RecursiveStepper target directory does not exist: " << dirPath_;
         return index;
     }
 
