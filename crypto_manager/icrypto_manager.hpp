@@ -16,14 +16,12 @@ class ICryptoManager
     virtual ~ICryptoManager() = default;
 
     /// @brief Выполняет шифрование файла.
-    ///
     /// @param[in] filePath Полный путь к файлу.
     /// @param[in] password Пароль, используемый для генерации ключа.
     /// @return `true`, если операция выполнена успешно, иначе `false`.
     virtual bool EncryptFile(const QString &filePath, const QString &password) = 0;
 
     /// @brief Выполняет дешифрование файла.
-    ///
     /// @param[in] filePath Полный путь к зашифрованному файлу.
     /// @param[in] password Пароль, используемый для генерации ключа.
     /// @return `true`, если операция выполнена успешно, иначе `false`.

@@ -4,6 +4,8 @@ project(crypto_manager LANGUAGES CXX)
 add_library(${PROJECT_NAME} STATIC
     src/crypto_primitives.cpp
     src/crypto_manager.cpp
+    src/crypto_strategy_factory.cpp
+    src/openssl_crypto_strategy.cpp
     src/crypto_manager_factory.cpp
 )
 

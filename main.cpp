@@ -21,7 +21,8 @@
 namespace
 {
 /// @brief Сообщение об ошибке при неправильном использовании программы
-const QString &errorMsg = "Usage:\nprogram encrypt <path>\nprogram decrypt <path>\n";
+const QString errorMsg = "Usage:\nprogram encrypt <path>\nprogram decrypt <path>\n"
+                         "Backends: openssl\n";
 
 /// @brief Скрытое чтение пароля из консоли (для Unix/macOS).
 static QString ReadPassword(QTextStream &cin, QTextStream &cout)
@@ -54,7 +55,7 @@ static QString ReadPassword(QTextStream &cin, QTextStream &cout)
 
     return password;
 #else
-    termios oldTerminalAttributes {};
+    termios oldTerminalAttributes{};
     bool echoDisabled = false;
 
     if (tcgetattr(STDIN_FILENO, &oldTerminalAttributes) == 0)
@@ -104,12 +105,25 @@ int main(int argc, char *argv[])
 
     QString mode;
     QString path;
+    QString backendName = "openssl";
 
     // Проверка аргументов
     if (argc >= 3)
     {
         mode = argv[1];
         path = QString::fromLocal8Bit(argv[2]);
+
+        if (argc >= 4)
+        {
+            backendName = QString::fromLocal8Bit(argv[3]).toLower();
+
+            if (backendName != "openssl")
+            {
+                cerr << "Unknown backend\n";
+                cerr << errorMsg;
+                return 1;
+            }
+        }
     }
     else
     {
@@ -141,7 +155,19 @@ int main(int argc, char *argv[])
     }
 
     const auto &stepper = std::make_unique<recursive_stepper::RecursiveStepper>(path);
-    const auto &encoder = crypto_manager::GetCryptoManager();
+    std::shared_ptr<crypto_manager::ICryptoManager> encoder;
+
+    if (backendName == "openssl")
+    {
+        encoder = crypto_manager::GetCryptoManager<crypto_manager::OpenSslTag>();
+    }
+
+    if (!encoder)
+    {
+        SecureClear(password);
+        cerr << "Failed to create crypto manager for selected backend\n";
+        return 1;
+    }
 
     for (const auto &file : stepper->BuildIndex())
     {
