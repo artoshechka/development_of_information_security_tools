@@ -3,6 +3,11 @@ project(recursive_encoder LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+if(WIN32)
+    set(CMAKE_PREFIX_PATH "")
+    set(OPENSSL_ROOT_DIR "")
+endif()
+
 
 find_package(QT NAMES Qt5 REQUIRED COMPONENTS Core)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core)

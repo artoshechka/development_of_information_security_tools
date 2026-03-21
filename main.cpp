@@ -14,11 +14,16 @@
 #include <memory>
 
 #ifdef _WIN32
-#include <windows.h>
+#define NOMINMAX
+#include <Windows.h>
+#undef EncryptFile
+#undef DecryptFile
 #else
 #include <termios.h>
 #include <unistd.h>
 #endif
+#include <algorithm>
+
 
 namespace
 {
@@ -101,7 +106,8 @@ static void SecureClear(QString &data)
 /// @return код завершения приложения
 int main(int argc, char *argv[])
 {
-    QTextStream cin(stdin);
+    QCoreApplication app(argc, argv);
+     QTextStream cin(stdin);
     QTextStream cout(stdout);
     QTextStream cerr(stderr);
     const auto appLogger = logger::GetLogger<logger::AppLoggerTag>();

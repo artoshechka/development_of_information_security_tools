@@ -6,6 +6,7 @@
 
 #include <crypto_strategy_factory.hpp>
 #include <icrypto_manager.hpp>
+#include <memory>
 
 #include <ilogger.hpp>
 
