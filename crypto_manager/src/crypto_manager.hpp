@@ -6,6 +6,7 @@
 
 #include <icrypto_strategy.hpp>
 #include <icrypto_manager.hpp>
+#include <ilogger.hpp>
 
 #include <memory>
 
@@ -17,7 +18,8 @@ class CryptoManager final : public ICryptoManager
   public:
     /// @brief Конструктор менеджера со стратегией криптографии.
     /// @param[in] cryptoStrategy Конкретная стратегия шифрования/дешифрования.
-    explicit CryptoManager(std::unique_ptr<ICryptoStrategy> cryptoStrategy);
+    /// @param[in] logger Логгер для системных ошибок.
+    CryptoManager(std::unique_ptr<ICryptoStrategy> cryptoStrategy, const std::shared_ptr<logger::ILogger> &logger);
 
     /// @brief Выполняет шифрование файла.
     /// @param[in] filePath Полный путь к файлу для шифрования.
@@ -33,6 +35,7 @@ class CryptoManager final : public ICryptoManager
 
   private:
     std::unique_ptr<ICryptoStrategy> cryptoStrategy_;
+    std::shared_ptr<logger::ILogger> logger_;
 };
 
 } // namespace crypto_manager

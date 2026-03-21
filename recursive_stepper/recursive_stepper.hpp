@@ -4,11 +4,15 @@
 #ifndef GUID_A9769D40_774C_4FF9_A4A3_8FF1912B4011
 #define GUID_A9769D40_774C_4FF9_A4A3_8FF1912B4011
 
+#include <ilogger.hpp>
+
 #include <QFileInfo>
 #include <QSet>
 #include <QString>
 #include <QTextStream>
 #include <QVector>
+
+#include <memory>
 
 namespace recursive_stepper
 {
@@ -22,7 +26,8 @@ class RecursiveStepper
   public:
     /// @brief Конструктор.
     /// @param[in] dirPath Путь к директории, с которой начинается обход.
-    RecursiveStepper(const QString &dirPath) noexcept;
+    /// @param[in] logger Логгер для системных ошибок.
+    RecursiveStepper(const QString &dirPath, const std::shared_ptr<logger::ILogger> &logger) noexcept;
 
     /// @brief Строит индекс файловой системы.
     /// @return Список путей ко всем найденным файлам.
@@ -30,6 +35,7 @@ class RecursiveStepper
 
   private:
     QString dirPath_; ///< Путь к директории, с которой начинается обход.
+    std::shared_ptr<logger::ILogger> logger_;
 };
 
 } // namespace recursive_stepper
