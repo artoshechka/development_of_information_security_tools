@@ -1,3 +1,7 @@
+/// @file
+/// @brief Вспомогательные функции для тестов logger.
+/// @author Artemenko Anton
+
 #ifndef LOGGER_TEST_TEST_UTILS_HPP
 #define LOGGER_TEST_TEST_UTILS_HPP
 

@@ -27,3 +27,13 @@ target_link_libraries(${PROJECT_NAME}
         Qt${QT_VERSION_MAJOR}::Core
         OpenSSL::SSL OpenSSL::Crypto
 )
+
+    create_test(
+        crypto_manager_test
+        test/crypto_primitives_test.cpp
+        test/crypto_manager_test.cpp
+        test/crypto_factories_test.cpp
+        test/openssl_crypto_strategy_test.cpp
+        LINK_LIBS
+        ${PROJECT_NAME}
+    )

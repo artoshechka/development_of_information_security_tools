@@ -1,3 +1,7 @@
+/// @file
+/// @brief Тесты класса AppSysLogger.
+/// @author Artemenko Anton
+
 #include <app_sys_logger.hpp>
 
 #include <test/test_utils.hpp>

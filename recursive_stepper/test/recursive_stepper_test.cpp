@@ -1,3 +1,7 @@
+/// @file
+/// @brief Тесты модуля recursive_stepper.
+/// @author Artemenko Anton
+
 #include <recursive_stepper.hpp>
 
 #include <logger_factory.hpp>

@@ -1,3 +1,7 @@
+/// @file
+/// @brief Тесты структуры LoggerSettings.
+/// @author Artemenko Anton
+
 #include <log_settings.hpp>
 
 #include <gtest/gtest.h>

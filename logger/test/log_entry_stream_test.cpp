@@ -1,3 +1,7 @@
+/// @file
+/// @brief Тесты класса LogEntryStream.
+/// @author Artemenko Anton
+
 #include <app_logger.hpp>
 #include <logger_macros.hpp>
 #include <src/log_entry_stream.hpp>
