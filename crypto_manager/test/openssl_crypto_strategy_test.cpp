@@ -2,14 +2,12 @@
 /// @brief Тесты OpenSSL-стратегии шифрования/дешифрования.
 /// @author Artemenko Anton
 
-#include <src/openssl_crypto_strategy.hpp>
-#include <src/crypto_primitives.hpp>
-
-#include <test/test_utils.hpp>
-
 #include <gtest/gtest.h>
 
 #include <QTemporaryDir>
+#include <src/crypto_primitives.hpp>
+#include <src/openssl_crypto_strategy.hpp>
+#include <test/test_utils.hpp>
 
 TEST(OpenSslCryptoStrategyTest, EncryptDecryptRoundTrip)
 {

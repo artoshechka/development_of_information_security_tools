@@ -2,18 +2,16 @@
 /// @brief Реализация потокобезопасного базового логгера
 /// @author Artemenko Anton
 
-#include <thread_safe_logger.hpp>
-
-#include <iostream>
-
 #include <QDateTime>
 #include <QDir>
 #include <QFileInfo>
+#include <iostream>
+#include <thread_safe_logger.hpp>
 
 using logger::LogLevel;
 using logger::ThreadSafeLogger;
 
-ThreadSafeLogger::ThreadSafeLogger(const QString &componentName, LogOutput output)
+ThreadSafeLogger::ThreadSafeLogger(const QString& componentName, LogOutput output)
     : componentName_(componentName), settings_(QString(), LogLevel::Debug, output)
 {
 }
@@ -26,7 +24,7 @@ ThreadSafeLogger::~ThreadSafeLogger()
     }
 }
 
-void ThreadSafeLogger::SetSettings(const logger::LoggerSettings &settings)
+void ThreadSafeLogger::SetSettings(const logger::LoggerSettings& settings)
 {
     QMutexLocker locker(&syncMutex_);
 
@@ -48,24 +46,24 @@ QString ThreadSafeLogger::LogLevelToString(LogLevel level)
 {
     switch (level)
     {
-    case LogLevel::Trace:
-        return "TRACE";
-    case LogLevel::Debug:
-        return "DEBUG";
-    case LogLevel::Info:
-        return "INFO";
-    case LogLevel::Warning:
-        return "WARNING";
-    case LogLevel::Error:
-        return "ERROR";
-    case LogLevel::Fatal:
-        return "FATAL";
-    default:
-        return "UNKNOWN";
+        case LogLevel::Trace:
+            return "TRACE";
+        case LogLevel::Debug:
+            return "DEBUG";
+        case LogLevel::Info:
+            return "INFO";
+        case LogLevel::Warning:
+            return "WARNING";
+        case LogLevel::Error:
+            return "ERROR";
+        case LogLevel::Fatal:
+            return "FATAL";
+        default:
+            return "UNKNOWN";
     }
 }
 
-void ThreadSafeLogger::Log(LogLevel level, const QString &message, const char *file, int line, const char *function)
+void ThreadSafeLogger::Log(LogLevel level, const QString& message, const char* file, int line, const char* function)
 {
     QMutexLocker locker(&syncMutex_);
 
@@ -79,15 +77,14 @@ void ThreadSafeLogger::Log(LogLevel level, const QString &message, const char *f
     if (settings_.output_ == LogOutput::Console)
     {
         std::cout << logEntry.toStdString() << std::endl;
-    }
-    else if (settings_.output_ == LogOutput::File)
+    } else if (settings_.output_ == LogOutput::File)
     {
         if (!settings_.logFilePath_.has_value() || settings_.logFilePath_->isEmpty())
         {
             return;
         }
 
-        const QString &logFilePath = settings_.logFilePath_.value();
+        const QString& logFilePath = settings_.logFilePath_.value();
         if (!logFile_.isOpen())
         {
             logFile_.setFileName(logFilePath);

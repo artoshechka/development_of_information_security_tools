@@ -4,23 +4,22 @@
 #ifndef GUID_76731180_6258_4b6b_b2a7_4ef2b0039d4d
 #define GUID_76731180_6258_4b6b_b2a7_4ef2b0039d4d
 
+#include <QString>
 #include <log_levels.hpp>
 #include <log_settings.hpp>
-
-#include <QString>
 
 namespace logger
 {
 /// @brief Интерфейс логгера
 class ILogger
 {
-  public:
+   public:
     /// @brief Виртуальный деструктор интерфейса
     virtual ~ILogger() = default;
 
     /// @brief Установить все настройки логгера одним вызовом
     /// @param[in] settings Набор настроек логгера
-    virtual void SetSettings(const LoggerSettings &settings) = 0;
+    virtual void SetSettings(const LoggerSettings& settings) = 0;
 
     /// @brief Получить текущие настройки логгера
     /// @return Текущие настройки
@@ -32,10 +31,10 @@ class ILogger
     /// @param[in] file Имя файла
     /// @param[in] line Номер строки
     /// @param[in] function Имя функции
-    virtual void Log(LogLevel level, const QString &message, const char *file = nullptr, int line = 0,
-                     const char *function = nullptr) = 0;
+    virtual void Log(LogLevel level, const QString& message, const char* file = nullptr, int line = 0,
+                     const char* function = nullptr) = 0;
 };
 
-} // namespace logger
+}  // namespace logger
 
-#endif // GUID_76731180_6258_4b6b_b2a7_4ef2b0039d4d
+#endif  // GUID_76731180_6258_4b6b_b2a7_4ef2b0039d4d

@@ -2,22 +2,19 @@
 /// @brief OpenSSL-реализация криптографической стратегии.
 /// @author Artemenko Anton
 
-#include <src/openssl_crypto_strategy.hpp>
-#include <src/crypto_primitives.hpp>
-
-#include <logger_macros.hpp>
+#include <openssl/crypto.h>
+#include <openssl/evp.h>
+#include <openssl/rand.h>
 
 #include <QByteArray>
 #include <QFile>
 #include <QSaveFile>
 #include <QString>
-
 #include <algorithm>
+#include <logger_macros.hpp>
+#include <src/crypto_primitives.hpp>
+#include <src/openssl_crypto_strategy.hpp>
 #include <vector>
-
-#include <openssl/crypto.h>
-#include <openssl/evp.h>
-#include <openssl/rand.h>
 
 using crypto_manager::OpenSslCryptoStrategy;
 using namespace crypto_manager::crypto_primitives;
@@ -25,12 +22,12 @@ namespace
 {
 
 /// @brief Безопасная запись буфера в файл с проверкой полного количества байт.
-static bool writeAll(QSaveFile &outputFile, const char *data, const qint64 size)
+static bool writeAll(QSaveFile& outputFile, const char* data, const qint64 size)
 {
     return outputFile.write(data, size) == size;
 }
 
-static void secureClearVector(std::vector<unsigned char> &data)
+static void secureClearVector(std::vector<unsigned char>& data)
 {
     if (!data.empty())
     {
@@ -40,7 +37,7 @@ static void secureClearVector(std::vector<unsigned char> &data)
 }
 
 /// @brief Чтение и шифрование файла по частям.
-static bool encryptStream(QFile &inputFile, QSaveFile &outputFile, EVP_CIPHER_CTX *cipherContext)
+static bool encryptStream(QFile& inputFile, QSaveFile& outputFile, EVP_CIPHER_CTX* cipherContext)
 {
     while (!inputFile.atEnd())
     {
@@ -54,8 +51,8 @@ static bool encryptStream(QFile &inputFile, QSaveFile &outputFile, EVP_CIPHER_CT
         QByteArray encryptedChunk(chunk.size() + EVP_MAX_BLOCK_LENGTH, 0);
         int outputLength = 0;
 
-        if (!EVP_EncryptUpdate(cipherContext, reinterpret_cast<unsigned char *>(encryptedChunk.data()), &outputLength,
-                               reinterpret_cast<const unsigned char *>(chunk.constData()), chunk.size()))
+        if (!EVP_EncryptUpdate(cipherContext, reinterpret_cast<unsigned char*>(encryptedChunk.data()), &outputLength,
+                               reinterpret_cast<const unsigned char*>(chunk.constData()), chunk.size()))
         {
             return false;
         }
@@ -64,13 +61,12 @@ static bool encryptStream(QFile &inputFile, QSaveFile &outputFile, EVP_CIPHER_CT
         {
             return false;
         }
-
     }
 
     QByteArray finalChunk(EVP_MAX_BLOCK_LENGTH, 0);
     int finalLength = 0;
 
-    if (!EVP_EncryptFinal_ex(cipherContext, reinterpret_cast<unsigned char *>(finalChunk.data()), &finalLength))
+    if (!EVP_EncryptFinal_ex(cipherContext, reinterpret_cast<unsigned char*>(finalChunk.data()), &finalLength))
     {
         return false;
     }
@@ -84,7 +80,7 @@ static bool encryptStream(QFile &inputFile, QSaveFile &outputFile, EVP_CIPHER_CT
 }
 
 /// @brief Чтение и дешифрование файла по частям.
-static bool decryptStream(QFile &inputFile, QSaveFile &outputFile, EVP_CIPHER_CTX *cipherContext,
+static bool decryptStream(QFile& inputFile, QSaveFile& outputFile, EVP_CIPHER_CTX* cipherContext,
                           qint64 encryptedPayloadSize)
 {
     qint64 bytesRemaining = encryptedPayloadSize;
@@ -104,8 +100,8 @@ static bool decryptStream(QFile &inputFile, QSaveFile &outputFile, EVP_CIPHER_CT
         QByteArray decryptedChunk(chunk.size() + EVP_MAX_BLOCK_LENGTH, 0);
         int outputLength = 0;
 
-        if (!EVP_DecryptUpdate(cipherContext, reinterpret_cast<unsigned char *>(decryptedChunk.data()), &outputLength,
-                               reinterpret_cast<const unsigned char *>(chunk.constData()), chunk.size()))
+        if (!EVP_DecryptUpdate(cipherContext, reinterpret_cast<unsigned char*>(decryptedChunk.data()), &outputLength,
+                               reinterpret_cast<const unsigned char*>(chunk.constData()), chunk.size()))
         {
             return false;
         }
@@ -119,13 +115,13 @@ static bool decryptStream(QFile &inputFile, QSaveFile &outputFile, EVP_CIPHER_CT
     return true;
 }
 
-} // namespace
+}  // namespace
 
-OpenSslCryptoStrategy::OpenSslCryptoStrategy(const std::shared_ptr<logger::ILogger> &logger) : logger_(logger)
+OpenSslCryptoStrategy::OpenSslCryptoStrategy(const std::shared_ptr<logger::ILogger>& logger) : logger_(logger)
 {
 }
 
-bool OpenSslCryptoStrategy::EncryptFile(const QString &filePath, const QString &password)
+bool OpenSslCryptoStrategy::EncryptFile(const QString& filePath, const QString& password)
 {
     QFile inputFile(filePath);
 
@@ -158,7 +154,7 @@ bool OpenSslCryptoStrategy::EncryptFile(const QString &filePath, const QString &
 
     QByteArray passwordSalt(kPasswordSaltSize, Qt::Uninitialized);
 
-    if (!RAND_bytes(reinterpret_cast<unsigned char *>(passwordSalt.data()), passwordSalt.size()))
+    if (!RAND_bytes(reinterpret_cast<unsigned char*>(passwordSalt.data()), passwordSalt.size()))
     {
         LogError(logger_) << "Failed to generate salt for encryption";
         outputFile.cancelWriting();
@@ -197,7 +193,7 @@ bool OpenSslCryptoStrategy::EncryptFile(const QString &filePath, const QString &
     if (!EVP_EncryptInit_ex(cipherContext.get(), EVP_aes_256_gcm(), nullptr, nullptr, nullptr) ||
         !EVP_CIPHER_CTX_ctrl(cipherContext.get(), EVP_CTRL_GCM_SET_IVLEN, static_cast<int>(nonce.size()), nullptr) ||
         !EVP_EncryptInit_ex(cipherContext.get(), nullptr, nullptr,
-                            reinterpret_cast<const unsigned char *>(encryptionKey.constData()), nonce.data()))
+                            reinterpret_cast<const unsigned char*>(encryptionKey.constData()), nonce.data()))
     {
         LogError(logger_) << "Failed to initialize AES-256-GCM encryption context";
         outputFile.cancelWriting();
@@ -209,7 +205,7 @@ bool OpenSslCryptoStrategy::EncryptFile(const QString &filePath, const QString &
 
     if (!writeAll(outputFile, kFileMagicSignature.constData(), kFileMagicSignature.size()) ||
         !writeAll(outputFile, passwordSalt.constData(), passwordSalt.size()) ||
-        !writeAll(outputFile, reinterpret_cast<const char *>(nonce.data()), static_cast<qint64>(nonce.size())) ||
+        !writeAll(outputFile, reinterpret_cast<const char*>(nonce.data()), static_cast<qint64>(nonce.size())) ||
         !encryptStream(inputFile, outputFile, cipherContext.get()))
     {
         LogError(logger_) << "Failed during encrypted stream write";
@@ -242,7 +238,7 @@ bool OpenSslCryptoStrategy::EncryptFile(const QString &filePath, const QString &
     return true;
 }
 
-bool OpenSslCryptoStrategy::DecryptFile(const QString &filePath, const QString &password)
+bool OpenSslCryptoStrategy::DecryptFile(const QString& filePath, const QString& password)
 {
     QFile inputFile(filePath);
     if (!inputFile.open(QIODevice::ReadOnly))
@@ -319,8 +315,8 @@ bool OpenSslCryptoStrategy::DecryptFile(const QString &filePath, const QString &
     if (!EVP_DecryptInit_ex(cipherContext.get(), EVP_aes_256_gcm(), nullptr, nullptr, nullptr) ||
         !EVP_CIPHER_CTX_ctrl(cipherContext.get(), EVP_CTRL_GCM_SET_IVLEN, nonce.size(), nullptr) ||
         !EVP_DecryptInit_ex(cipherContext.get(), nullptr, nullptr,
-                            reinterpret_cast<const unsigned char *>(decryptionKey.constData()),
-                            reinterpret_cast<const unsigned char *>(nonce.constData())))
+                            reinterpret_cast<const unsigned char*>(decryptionKey.constData()),
+                            reinterpret_cast<const unsigned char*>(nonce.constData())))
     {
         LogError(logger_) << "Failed to initialize AES-256-GCM decryption context";
         outputFile.cancelWriting();
@@ -356,7 +352,8 @@ bool OpenSslCryptoStrategy::DecryptFile(const QString &filePath, const QString &
 
     QByteArray finalChunk(EVP_MAX_BLOCK_LENGTH, 0);
     int finalLength = 0;
-    if (EVP_DecryptFinal_ex(cipherContext.get(), reinterpret_cast<unsigned char *>(finalChunk.data()), &finalLength) <= 0)
+    if (EVP_DecryptFinal_ex(cipherContext.get(), reinterpret_cast<unsigned char*>(finalChunk.data()), &finalLength) <=
+        0)
     {
         LogError(logger_) << "Authentication failed during decrypt finalization";
         outputFile.cancelWriting();

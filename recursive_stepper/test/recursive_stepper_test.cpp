@@ -2,19 +2,17 @@
 /// @brief Тесты модуля recursive_stepper.
 /// @author Artemenko Anton
 
-#include <recursive_stepper.hpp>
-
-#include <logger_factory.hpp>
-
 #include <gtest/gtest.h>
 
 #include <QDir>
 #include <QFile>
 #include <QTemporaryDir>
+#include <logger_factory.hpp>
+#include <recursive_stepper.hpp>
 
 namespace
 {
-QString CreateFileWithContent(const QString &path)
+QString CreateFileWithContent(const QString& path)
 {
     QFile file(path);
     EXPECT_TRUE(file.open(QIODevice::WriteOnly | QIODevice::Text));
@@ -22,7 +20,7 @@ QString CreateFileWithContent(const QString &path)
     file.close();
     return QFileInfo(path).absoluteFilePath();
 }
-} // namespace
+}  // namespace
 
 TEST(RecursiveStepperTest, BuildIndexReturnsAllFilesRecursively)
 {

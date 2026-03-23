@@ -2,10 +2,9 @@
 /// @brief Определение логгера приложения
 /// @author Artemenko Anton
 
-#include <app_logger.hpp>
-
 #include <QDateTime>
 #include <QFileInfo>
+#include <app_logger.hpp>
 
 using logger::AppLogger;
 using logger::LogLevel;
@@ -16,8 +15,8 @@ AppLogger::AppLogger(LogOutput output) : ThreadSafeLogger("APP", output)
 
 AppLogger::~AppLogger() = default;
 
-QString AppLogger::FormatMessage(LogLevel level, const QString &message, const char *file, int line,
-                                 const char *function) const
+QString AppLogger::FormatMessage(LogLevel level, const QString& message, const char* file, int line,
+                                 const char* function) const
 {
     QString timestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz");
     QString logLevel = ThreadSafeLogger::LogLevelToString(level);

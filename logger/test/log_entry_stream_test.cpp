@@ -2,15 +2,13 @@
 /// @brief Тесты класса LogEntryStream.
 /// @author Artemenko Anton
 
-#include <app_logger.hpp>
-#include <logger_macros.hpp>
-#include <src/log_entry_stream.hpp>
-
-#include <test/test_utils.hpp>
-
 #include <gtest/gtest.h>
 
 #include <QTemporaryDir>
+#include <app_logger.hpp>
+#include <logger_macros.hpp>
+#include <src/log_entry_stream.hpp>
+#include <test/test_utils.hpp>
 
 TEST(LogEntryStreamTest, FlushesMessageOnDestruction)
 {

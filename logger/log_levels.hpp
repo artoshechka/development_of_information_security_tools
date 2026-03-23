@@ -7,16 +7,15 @@
 namespace logger
 {
 /// @brief Уровни логирования
-enum class LogLevel
-{
-    Trace,   ///< Трассировка
-    Debug,   ///< Отладка
-    Info,    ///< Информация
-    Warning, ///< Предупреждение
-    Error,   ///< Ошибка
-    Fatal    ///< Фатальная ошибка
+enum class LogLevel {
+    Trace,    ///< Трассировка
+    Debug,    ///< Отладка
+    Info,     ///< Информация
+    Warning,  ///< Предупреждение
+    Error,    ///< Ошибка
+    Fatal     ///< Фатальная ошибка
 };
 
-} // namespace logger
+}  // namespace logger
 
-#endif // GUID_7f71c29a_8f1f_41dc_bbd2_2406bd48a72b
+#endif  // GUID_7f71c29a_8f1f_41dc_bbd2_2406bd48a72b

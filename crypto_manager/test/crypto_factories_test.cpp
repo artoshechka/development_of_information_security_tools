@@ -2,29 +2,28 @@
 /// @brief Тесты фабрик crypto_manager.
 /// @author Artemenko Anton
 
+#include <gtest/gtest.h>
+
 #include <crypto_manager_factory.hpp>
 #include <crypto_strategy_factory.hpp>
-
 #include <test/test_utils.hpp>
-
-#include <gtest/gtest.h>
 
 namespace
 {
 class FakeCryptoStrategy final : public crypto_manager::ICryptoStrategy
 {
-  public:
-    bool EncryptFile(const QString &, const QString &) override
+   public:
+    bool EncryptFile(const QString&, const QString&) override
     {
         return true;
     }
 
-    bool DecryptFile(const QString &, const QString &) override
+    bool DecryptFile(const QString&, const QString&) override
     {
         return true;
     }
 };
-} // namespace
+}  // namespace
 
 TEST(CryptoFactoriesTest, CreateCryptoManagerReturnsNullForNullStrategy)
 {

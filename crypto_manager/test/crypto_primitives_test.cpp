@@ -2,9 +2,9 @@
 /// @brief Тесты криптографических примитивов.
 /// @author Artemenko Anton
 
-#include <src/crypto_primitives.hpp>
-
 #include <gtest/gtest.h>
+
+#include <src/crypto_primitives.hpp>
 
 using namespace crypto_manager::crypto_primitives;
 

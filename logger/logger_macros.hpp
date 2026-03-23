@@ -11,37 +11,37 @@ namespace logger
 /// @brief Макрос для логирования с уровнем Trace
 /// @details Автоматически добавляет информацию о файле, строке и функции
 /// @param[in] loggerPtr Указатель на логгер
-#define LogTrace(loggerPtr)                                                                                            \
+#define LogTrace(loggerPtr) \
     logger::detail::LogEntryStream((loggerPtr), logger::LogLevel::Trace, __FILE__, __LINE__, __FUNCTION__)
 
 /// @brief Макрос для логирования с уровнем Debug
 /// @details Автоматически добавляет информацию о файле, строке и функции
 /// @param[in] loggerPtr Указатель на логгер
-#define LogDebug(loggerPtr)                                                                                            \
+#define LogDebug(loggerPtr) \
     logger::detail::LogEntryStream((loggerPtr), logger::LogLevel::Debug, __FILE__, __LINE__, __FUNCTION__)
 
 /// @brief Макрос для логирования с уровнем Info
 /// @details Автоматически добавляет информацию о файле, строке и функции
 /// @param[in] loggerPtr Указатель на логгер
-#define LogInfo(loggerPtr)                                                                                             \
+#define LogInfo(loggerPtr) \
     logger::detail::LogEntryStream((loggerPtr), logger::LogLevel::Info, __FILE__, __LINE__, __FUNCTION__)
 
 /// @brief Макрос для логирования с уровнем Warning
 /// @details Автоматически добавляет информацию о файле, строке и функции
 /// @param[in] loggerPtr Указатель на логгер
-#define LogWarning(loggerPtr)                                                                                          \
+#define LogWarning(loggerPtr) \
     logger::detail::LogEntryStream((loggerPtr), logger::LogLevel::Warning, __FILE__, __LINE__, __FUNCTION__)
 
 /// @brief Макрос для логирования с уровнем Error
 /// @details Автоматически добавляет информацию о файле, строке и функции
 /// @param[in] loggerPtr Указатель на логгер
-#define LogError(loggerPtr)                                                                                            \
+#define LogError(loggerPtr) \
     logger::detail::LogEntryStream((loggerPtr), logger::LogLevel::Error, __FILE__, __LINE__, __FUNCTION__)
 
 /// @brief Макрос для логирования с уровнем Fatal
 /// @details Автоматически добавляет информацию о файле, строке и функции
 /// @param[in] loggerPtr Указатель на логгер
-#define LogFatal(loggerPtr)                                                                                            \
+#define LogFatal(loggerPtr) \
     logger::detail::LogEntryStream((loggerPtr), logger::LogLevel::Fatal, __FILE__, __LINE__, __FUNCTION__)
-} // namespace logger
-#endif // GUID_13d828c9_913c_478d_aab2_8f1404db6d7f
+}  // namespace logger
+#endif  // GUID_13d828c9_913c_478d_aab2_8f1404db6d7f

@@ -6,7 +6,6 @@
 
 #include <icrypto_strategy.hpp>
 #include <ilogger.hpp>
-
 #include <memory>
 
 namespace crypto_manager
@@ -19,12 +18,12 @@ struct OpenSslTag;
 /// @param[in] logger Логгер для системных ошибок.
 /// @return Уникальный указатель на стратегию.
 template <typename TBackendTag>
-std::unique_ptr<ICryptoStrategy> CreateCryptoStrategy(const std::shared_ptr<logger::ILogger> &logger);
+std::unique_ptr<ICryptoStrategy> CreateCryptoStrategy(const std::shared_ptr<logger::ILogger>& logger);
 
 /// @brief Специализация фабрики для OpenSSL backend'а.
 template <>
-std::unique_ptr<ICryptoStrategy> CreateCryptoStrategy<OpenSslTag>(const std::shared_ptr<logger::ILogger> &logger);
+std::unique_ptr<ICryptoStrategy> CreateCryptoStrategy<OpenSslTag>(const std::shared_ptr<logger::ILogger>& logger);
 
-} // namespace crypto_manager
+}  // namespace crypto_manager
 
-#endif // GUID_6F34AE39_0BB3_4A98_83D7_C1945278D4A2
+#endif  // GUID_6F34AE39_0BB3_4A98_83D7_C1945278D4A2

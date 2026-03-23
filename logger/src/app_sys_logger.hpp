@@ -11,7 +11,7 @@ namespace logger
 /// @brief Системный логгер внутренних подсистем приложения
 class AppSysLogger final : public ThreadSafeLogger
 {
-  public:
+   public:
     /// @brief Конструктор системного логгера
     /// @param[in] output Режим вывода логов
     explicit AppSysLogger(LogOutput output = LogOutput::File);
@@ -19,7 +19,7 @@ class AppSysLogger final : public ThreadSafeLogger
     /// @brief Деструктор системного логгера
     ~AppSysLogger() override;
 
-  private:
+   private:
     /// @brief Сформировать строку сообщения лога
     /// @param[in] level Уровень логирования
     /// @param[in] message Текст сообщения
@@ -27,10 +27,10 @@ class AppSysLogger final : public ThreadSafeLogger
     /// @param[in] line Номер строки
     /// @param[in] function Имя функции
     /// @return Отформатированное сообщение
-    QString FormatMessage(LogLevel level, const QString &message, const char *file, int line,
-                          const char *function) const override;
+    QString FormatMessage(LogLevel level, const QString& message, const char* file, int line,
+                          const char* function) const override;
 };
 
-} // namespace logger
+}  // namespace logger
 
-#endif // GUID_77e191a9_8f61_44f4_a864_4f88b7e81fd6
+#endif  // GUID_77e191a9_8f61_44f4_a864_4f88b7e81fd6

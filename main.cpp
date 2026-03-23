@@ -1,17 +1,15 @@
 /// @file
 /// @brief Главное приложение
 /// @author Artemenko Anton
-#include <crypto_manager_factory.hpp>
-#include <logger_factory.hpp>
-#include <logger_macros.hpp>
-#include <recursive_stepper.hpp>
-
 #include <QCoreApplication>
 #include <QDir>
 #include <QTextStream>
-
+#include <crypto_manager_factory.hpp>
 #include <limits>
+#include <logger_factory.hpp>
+#include <logger_macros.hpp>
 #include <memory>
+#include <recursive_stepper.hpp>
 
 #ifdef _WIN32
 #define NOMINMAX
@@ -24,15 +22,15 @@
 #endif
 #include <algorithm>
 
-
 namespace
 {
 /// @brief Сообщение об ошибке при неправильном использовании программы
-const QString errorMsg = "Usage:\nprogram encrypt <path>\nprogram decrypt <path>\n"
-                         "Backends: openssl\n";
+const QString errorMsg =
+    "Usage:\nprogram encrypt <path>\nprogram decrypt <path>\n"
+    "Backends: openssl\n";
 
 /// @brief Скрытое чтение пароля из консоли (для Unix/macOS).
-static QString ReadPassword(QTextStream &cin, QTextStream &cout)
+static QString ReadPassword(QTextStream& cin, QTextStream& cout)
 {
     cout << "Enter password: ";
     cout.flush();
@@ -89,7 +87,7 @@ static QString ReadPassword(QTextStream &cin, QTextStream &cout)
 }
 
 /// @brief Безопасная очистка строки с паролем.
-static void SecureClear(QString &data)
+static void SecureClear(QString& data)
 {
     if (!data.isEmpty())
     {
@@ -98,16 +96,16 @@ static void SecureClear(QString &data)
         data.squeeze();
     }
 }
-} // namespace
+}  // namespace
 
 /// @brief Точка входа в программу.
 /// @param[in] argc количество аргументов командной строки
 /// @param[in] argv массив аргументов командной строки
 /// @return код завершения приложения
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     QCoreApplication app(argc, argv);
-     QTextStream cin(stdin);
+    QTextStream cin(stdin);
     QTextStream cout(stdout);
     QTextStream cerr(stderr);
     const auto appLogger = logger::GetLogger<logger::AppLoggerTag>();
@@ -134,8 +132,7 @@ int main(int argc, char *argv[])
                 return 1;
             }
         }
-    }
-    else
+    } else
     {
         LogError(appLogger) << "Invalid arguments: expected at least mode and path";
         cerr << errorMsg;
@@ -165,7 +162,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    const auto &stepper = std::make_unique<recursive_stepper::RecursiveStepper>(path, appSysLogger);
+    const auto& stepper = std::make_unique<recursive_stepper::RecursiveStepper>(path, appSysLogger);
     std::shared_ptr<crypto_manager::ICryptoManager> encoder;
 
     if (backendName == "openssl")
@@ -182,19 +179,17 @@ int main(int argc, char *argv[])
 
     LogInfo(appLogger) << "Processing started. Mode: " << mode << ", Path: " << path;
 
-    for (const auto &file : stepper->BuildIndex())
+    for (const auto& file : stepper->BuildIndex())
     {
         bool result = false;
 
         if (mode == "encrypt")
         {
             result = encoder->EncryptFile(file, password);
-        }
-        else if (mode == "decrypt")
+        } else if (mode == "decrypt")
         {
             result = encoder->DecryptFile(file, password);
-        }
-        else
+        } else
         {
             LogError(appLogger) << "Invalid mode: " << mode;
             SecureClear(password);
@@ -206,8 +201,7 @@ int main(int argc, char *argv[])
         {
             LogInfo(appLogger) << "File processed: " << file;
             cout << "File processed: " << file << "\n";
-        }
-        else
+        } else
         {
             LogWarning(appLogger) << "File skipped: " << file;
             cout << "File skipped: " << file << "\n";

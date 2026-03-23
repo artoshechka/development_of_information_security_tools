@@ -3,12 +3,11 @@
 #ifndef GUID_4A790AFF_6D26_41A8_9E45_90D2BA76219E
 #define GUID_4A790AFF_6D26_41A8_9E45_90D2BA76219E
 
+#include <openssl/evp.h>
+
 #include <QByteArray>
 #include <QString>
-
 #include <memory>
-
-#include <openssl/evp.h>
 
 namespace crypto_manager::crypto_primitives
 {
@@ -32,7 +31,7 @@ struct EVP_CIPHER_CTX_Deleter
 {
     /// @brief Освобождает контекст шифрования OpenSSL.
     /// @param[in] ctx Указатель на контекст OpenSSL.
-    void operator()(EVP_CIPHER_CTX *ctx) const;
+    void operator()(EVP_CIPHER_CTX* ctx) const;
 };
 
 /// @brief Уникальный указатель на `EVP_CIPHER_CTX` с кастомным удалителем.
@@ -40,15 +39,15 @@ using UniqPtrCipherContext = std::unique_ptr<EVP_CIPHER_CTX, EVP_CIPHER_CTX_Dele
 
 /// @brief Безопасно очищает буфер, содержащий чувствительные данные.
 /// @param[in,out] data Буфер для очистки.
-void SecureClear(QByteArray &data);
+void SecureClear(QByteArray& data);
 
 /// @brief Вычисляет ключ шифрования из пароля и соли.
 /// @param[in] userPassword Пользовательский пароль.
 /// @param[in] salt Соль для PBKDF2.
 /// @param[out] outEncryptionKey Сгенерированный ключ шифрования.
 /// @return `true`, если ключ успешно сгенерирован, иначе `false`.
-bool DeriveEncryptionKey(const QString &userPassword, const QByteArray &salt, QByteArray &outEncryptionKey);
+bool DeriveEncryptionKey(const QString& userPassword, const QByteArray& salt, QByteArray& outEncryptionKey);
 
-} // namespace crypto_manager::crypto_primitives
+}  // namespace crypto_manager::crypto_primitives
 
-#endif // GUID_4A790AFF_6D26_41A8_9E45_90D2BA76219E
+#endif  // GUID_4A790AFF_6D26_41A8_9E45_90D2BA76219E

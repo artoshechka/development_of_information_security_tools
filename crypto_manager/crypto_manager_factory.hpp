@@ -6,10 +6,7 @@
 
 #include <crypto_strategy_factory.hpp>
 #include <icrypto_manager.hpp>
-#include <memory>
-
 #include <ilogger.hpp>
-
 #include <memory>
 
 namespace crypto_manager
@@ -19,18 +16,19 @@ namespace crypto_manager
 /// @param[in] logger Логгер для системных ошибок.
 /// @return Умный указатель на менеджер криптографических операций.
 std::shared_ptr<ICryptoManager> CreateCryptoManager(std::unique_ptr<ICryptoStrategy> cryptoStrategy,
-                                                    const std::shared_ptr<logger::ILogger> &logger);
+                                                    const std::shared_ptr<logger::ILogger>& logger);
 
 /// @brief Создает менеджер криптографических операций по backend-тегу.
 /// @tparam TBackendTag Тип тега backend'а.
 /// @param[in] logger Логгер для системных ошибок.
 /// @return Умный указатель на менеджер криптографических операций.
 template <typename TBackendTag>
-std::shared_ptr<ICryptoManager> GetCryptoManager(const std::shared_ptr<logger::ILogger> &logger);
+std::shared_ptr<ICryptoManager> GetCryptoManager(const std::shared_ptr<logger::ILogger>& logger);
 
 /// @brief Специализация фабрики менеджера для OpenSSL backend'а.
-template <> std::shared_ptr<ICryptoManager> GetCryptoManager<OpenSslTag>(const std::shared_ptr<logger::ILogger> &logger);
+template <>
+std::shared_ptr<ICryptoManager> GetCryptoManager<OpenSslTag>(const std::shared_ptr<logger::ILogger>& logger);
 
-} // namespace crypto_manager
+}  // namespace crypto_manager
 
-#endif // GUID_DEA1E190_A43E_4746_AAB4_44380D2D63C1
+#endif  // GUID_DEA1E190_A43E_4746_AAB4_44380D2D63C1

@@ -6,8 +6,8 @@
 #include <src/openssl_crypto_strategy.hpp>
 
 template <>
-std::unique_ptr<crypto_manager::ICryptoStrategy>
-crypto_manager::CreateCryptoStrategy<crypto_manager::OpenSslTag>(const std::shared_ptr<logger::ILogger> &logger)
+std::unique_ptr<crypto_manager::ICryptoStrategy> crypto_manager::CreateCryptoStrategy<crypto_manager::OpenSslTag>(
+    const std::shared_ptr<logger::ILogger>& logger)
 {
     return std::make_unique<OpenSslCryptoStrategy>(logger);
 }

@@ -2,9 +2,9 @@
 /// @brief Тесты фабрики logger::GetLogger.
 /// @author Artemenko Anton
 
-#include <logger_factory.hpp>
-
 #include <gtest/gtest.h>
+
+#include <logger_factory.hpp>
 
 TEST(LoggerFactoryTest, ReturnsSingletonInstances)
 {

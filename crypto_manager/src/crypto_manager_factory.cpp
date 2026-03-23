@@ -2,14 +2,12 @@
 /// @brief Определение фабрики для менеджера криптографических операций.
 /// @author Artemenko Anton
 #include <crypto_manager_factory.hpp>
+#include <logger_macros.hpp>
+#include <memory>
 #include <src/crypto_manager.hpp>
 
-#include <logger_macros.hpp>
-
-#include <memory>
-
 std::shared_ptr<crypto_manager::ICryptoManager> crypto_manager::CreateCryptoManager(
-    std::unique_ptr<ICryptoStrategy> cryptoStrategy, const std::shared_ptr<logger::ILogger> &logger)
+    std::unique_ptr<ICryptoStrategy> cryptoStrategy, const std::shared_ptr<logger::ILogger>& logger)
 {
     if (!cryptoStrategy)
     {
@@ -21,8 +19,8 @@ std::shared_ptr<crypto_manager::ICryptoManager> crypto_manager::CreateCryptoMana
 }
 
 template <>
-std::shared_ptr<crypto_manager::ICryptoManager>
-crypto_manager::GetCryptoManager<crypto_manager::OpenSslTag>(const std::shared_ptr<logger::ILogger> &logger)
+std::shared_ptr<crypto_manager::ICryptoManager> crypto_manager::GetCryptoManager<crypto_manager::OpenSslTag>(
+    const std::shared_ptr<logger::ILogger>& logger)
 {
     return CreateCryptoManager(CreateCryptoStrategy<OpenSslTag>(logger), logger);
 }

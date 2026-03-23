@@ -2,23 +2,22 @@
 /// @brief Тесты класса CryptoManager.
 /// @author Artemenko Anton
 
-#include <src/crypto_manager.hpp>
-
-#include <test/test_utils.hpp>
-
 #include <gtest/gtest.h>
+
+#include <src/crypto_manager.hpp>
+#include <test/test_utils.hpp>
 
 namespace
 {
 class FakeCryptoStrategy final : public crypto_manager::ICryptoStrategy
 {
-  public:
+   public:
     FakeCryptoStrategy(bool encryptResult, bool decryptResult)
         : encryptResult_(encryptResult), decryptResult_(decryptResult), encryptCalls_(0), decryptCalls_(0)
     {
     }
 
-    bool EncryptFile(const QString &filePath, const QString &password) override
+    bool EncryptFile(const QString& filePath, const QString& password) override
     {
         lastEncryptFilePath_ = filePath;
         lastEncryptPassword_ = password;
@@ -26,7 +25,7 @@ class FakeCryptoStrategy final : public crypto_manager::ICryptoStrategy
         return encryptResult_;
     }
 
-    bool DecryptFile(const QString &filePath, const QString &password) override
+    bool DecryptFile(const QString& filePath, const QString& password) override
     {
         lastDecryptFilePath_ = filePath;
         lastDecryptPassword_ = password;
@@ -43,7 +42,7 @@ class FakeCryptoStrategy final : public crypto_manager::ICryptoStrategy
     QString lastDecryptFilePath_;
     QString lastDecryptPassword_;
 };
-} // namespace
+}  // namespace
 
 TEST(CryptoManagerTest, EncryptDelegatesToStrategy)
 {
@@ -54,7 +53,7 @@ TEST(CryptoManagerTest, EncryptDelegatesToStrategy)
     auto logger = CreateTestLogger(logPath);
 
     auto strategy = std::make_unique<FakeCryptoStrategy>(true, false);
-    auto *strategyRaw = strategy.get();
+    auto* strategyRaw = strategy.get();
 
     crypto_manager::CryptoManager manager(std::move(strategy), logger);
 
@@ -75,7 +74,7 @@ TEST(CryptoManagerTest, EncryptReportsFailure)
     auto logger = CreateTestLogger(logPath);
 
     auto strategy = std::make_unique<FakeCryptoStrategy>(false, true);
-    auto *strategyRaw = strategy.get();
+    auto* strategyRaw = strategy.get();
 
     crypto_manager::CryptoManager manager(std::move(strategy), logger);
 
@@ -94,7 +93,7 @@ TEST(CryptoManagerTest, DecryptDelegatesToStrategyAndReportsFailure)
     auto logger = CreateTestLogger(logPath);
 
     auto strategy = std::make_unique<FakeCryptoStrategy>(true, false);
-    auto *strategyRaw = strategy.get();
+    auto* strategyRaw = strategy.get();
 
     crypto_manager::CryptoManager manager(std::move(strategy), logger);
 

@@ -308,3 +308,11 @@ gcovr -r .. \
 ```bash
 open build-coverage/coverage_cpp.html
 ```
+
+## Форматирование кода
+
+Для автоматического форматирования всех исходных файлов используйте команду:
+
+```bash
+find . -name "*.cpp" -o -name "*.hpp" | grep -v "/build/" | xargs clang-format -i
+```

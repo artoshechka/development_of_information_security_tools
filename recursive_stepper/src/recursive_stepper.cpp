@@ -1,18 +1,16 @@
 /// @file
 /// @brief Определение класса для рекурсивного обхода директорий
 /// @author Artemenko Anton
-#include <recursive_stepper.hpp>
-
-#include <logger_macros.hpp>
-
 #include <QDateTime>
 #include <QDir>
 #include <QDirIterator>
+#include <logger_macros.hpp>
+#include <recursive_stepper.hpp>
 
 using recursive_stepper::FileSystemIndex;
 using recursive_stepper::RecursiveStepper;
 
-RecursiveStepper::RecursiveStepper(const QString &dirPath, const std::shared_ptr<logger::ILogger> &logger) noexcept
+RecursiveStepper::RecursiveStepper(const QString& dirPath, const std::shared_ptr<logger::ILogger>& logger) noexcept
     : dirPath_(std::move(dirPath)), logger_(logger)
 {
 }

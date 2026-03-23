@@ -2,10 +2,9 @@
 /// @brief Определение системного логгера приложения
 /// @author Artemenko Anton
 
-#include <app_sys_logger.hpp>
-
 #include <QDateTime>
 #include <QFileInfo>
+#include <app_sys_logger.hpp>
 
 using logger::AppSysLogger;
 using logger::LogLevel;
@@ -16,8 +15,8 @@ AppSysLogger::AppSysLogger(LogOutput output) : ThreadSafeLogger("APP-SYS", outpu
 
 AppSysLogger::~AppSysLogger() = default;
 
-QString AppSysLogger::FormatMessage(LogLevel level, const QString &message, const char *file, int line,
-                                    const char *function) const
+QString AppSysLogger::FormatMessage(LogLevel level, const QString& message, const char* file, int line,
+                                    const char* function) const
 {
     QString timestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz");
     QString logLevel = ThreadSafeLogger::LogLevelToString(level);

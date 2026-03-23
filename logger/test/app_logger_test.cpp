@@ -2,13 +2,11 @@
 /// @brief Тесты класса AppLogger.
 /// @author Artemenko Anton
 
-#include <app_logger.hpp>
-
-#include <test/test_utils.hpp>
-
 #include <gtest/gtest.h>
 
 #include <QTemporaryDir>
+#include <app_logger.hpp>
+#include <test/test_utils.hpp>
 
 TEST(AppLoggerTest, WritesFormattedMessageWithSourceInfo)
 {
