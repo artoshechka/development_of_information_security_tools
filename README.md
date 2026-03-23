@@ -111,8 +111,6 @@ classDiagram
         File
     }
 
-    class OpenSslTag
-
     class ICryptoStrategy {
         <<interface>>
         +EncryptFile(filePath, password)
@@ -184,8 +182,6 @@ classDiagram
     CryptoManagerFactory ..> CryptoStrategyFactory
     CryptoManagerFactory ..> CryptoManager
     CryptoStrategyFactory ..> OpenSslCryptoStrategy
-    CryptoStrategyFactory ..> OpenSslTag
-    CryptoManagerFactory ..> OpenSslTag
 ```
 ## Инструкция для пользователя
 Сборка проекта производится следующим образом:
