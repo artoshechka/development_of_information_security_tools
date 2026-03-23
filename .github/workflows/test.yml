@@ -77,7 +77,10 @@ jobs:
 
       - name: "Test: Not enough arguments"
         run: |
-          ! ./build/recursive_encoder encrypt 2>&1 | grep -qi "usage"
+          set +e
+          OUTPUT=$(./build/recursive_encoder encrypt 2>&1)
+          echo "$OUTPUT"
+          echo "$OUTPUT" | grep -qi "usage"
 
       - name: "Test: Invalid mode"
         run: |
@@ -85,7 +88,11 @@ jobs:
 
       - name: "Test: Non-existent directory"
         run: |
-          ! echo "password" | ./build/recursive_encoder encrypt nonexistent_dir 2>&1 | grep -qi "error"
+          set +e
+          OUTPUT=$(echo "password" | ./build/recursive_encoder encrypt nonexistent_dir 2>&1)
+          echo "$OUTPUT"
+
+          echo "$OUTPUT" | grep -Ei "error"
 
       - name: "Upload logs"
         uses: actions/upload-artifact@v4
