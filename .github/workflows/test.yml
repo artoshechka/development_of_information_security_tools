@@ -8,10 +8,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: "Checkout"
         uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: "Install dependencies"
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -21,7 +21,7 @@ jobs:
             qtbase5-dev \
             libssl-dev
 
-      - name: Configure build
+      - name: "Configure build"
         run: |
           rm -rf build
           cmake -S . -B build \
@@ -29,40 +29,40 @@ jobs:
             -DRECURSIVE_ENCODER_BUILD_TESTS=OFF \
             -DCMAKE_BUILD_TYPE=Debug
 
-      - name: Build
+      - name: "Build"
         run: |
           cmake --build build --target recursive_encoder --parallel
 
-      - name: Run unit tests (if any)
+      - name: "Run unit tests (if any)"
         run: |
           ctest --test-dir build --output-on-failure || true
 
-      - name: Prepare test data
+      - name: "Prepare test data"
         run: |
           mkdir -p testdata/input
           echo "testdata" > testdata/input/file1.txt
 
-      - name: Test: Encrypt file
+      - name: "Test: Encrypt file"
         run: |
           echo "password" | ./build/recursive_encoder encrypt testdata/input
 
-      - name: Test: Decrypt file
+      - name: "Test: Decrypt file"
         run: |
           echo "password" | ./build/recursive_encoder decrypt testdata/input
 
-      - name: Test: Check decrypted content
+      - name: "Test: Check decrypted content"
         run: |
           echo "testdata" > expected.txt
           diff testdata/input/file1.txt expected.txt
 
-      - name: Test: Wrong password
+      - name: "Test: Wrong password"
         run: |
           ! echo "wrongpass" | ./build/recursive_encoder decrypt testdata/input 2>&1 | grep -q "успешно"
 
-      - name: Test: Not enough arguments
+      - name: "Test: Not enough arguments"
         run: |
           ! ./build/recursive_encoder encrypt 2>&1 | grep -qi "usage"
 
-      - name: Test: Invalid mode
+      - name: "Test: Invalid mode"
         run: |
           ! ./build/recursive_encoder unknown testdata/input 2>&1 | grep -qi "режим"
