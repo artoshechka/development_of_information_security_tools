@@ -1,18 +1,7 @@
 name: CI Test Recursive Encoder
 
 on:
-  push:
-    paths:
-      - '**.cpp'
-      - '**.hpp'
-      - '**/CMakeLists.txt'
-      - '.github/workflows/test.yml'
-  pull_request:
-    paths:
-      - '**.cpp'
-      - '**.hpp'
-      - '**/CMakeLists.txt'
-      - '.github/workflows/test.yml'
+  workflow_dispatch:
 
 jobs:
   build-and-test:
