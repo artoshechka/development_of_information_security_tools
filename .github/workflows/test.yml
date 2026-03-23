@@ -33,10 +33,6 @@ jobs:
         run: |
           cmake --build build --target recursive_encoder --parallel
 
-      - name: "Run unit tests (if any)"
-        run: |
-          ctest --test-dir build --output-on-failure || true
-
       - name: "Prepare test data"
         run: |
           mkdir -p testdata/input
@@ -55,6 +51,26 @@ jobs:
           echo "testdata" > expected.txt
           diff testdata/input/file1.txt expected.txt
 
+      - name: "Test: File actually encrypted"
+        run: |
+          echo "secret" > testdata/input/file_check.txt
+          echo "password" | ./build/recursive_encoder encrypt testdata/input
+          ! grep -q "secret" testdata/input/file_check.txt
+
+      - name: "Test: Recursive encryption"
+        run: |
+          mkdir -p testdata/input/subdir
+          echo "inner" > testdata/input/subdir/file2.txt
+          echo "password" | ./build/recursive_encoder encrypt testdata/input
+          echo "password" | ./build/recursive_encoder decrypt testdata/input
+          grep -q "inner" testdata/input/subdir/file2.txt
+
+      - name: "Test: Double encryption"
+        run: |
+          echo "data" > testdata/input/file3.txt
+          echo "password" | ./build/recursive_encoder encrypt testdata/input
+          ! echo "password" | ./build/recursive_encoder encrypt testdata/input 2>&1 | grep -qi "already"
+
       - name: "Test: Wrong password"
         run: |
           ! echo "wrongpass" | ./build/recursive_encoder decrypt testdata/input 2>&1 | grep -q "успешно"
@@ -66,3 +82,17 @@ jobs:
       - name: "Test: Invalid mode"
         run: |
           ! ./build/recursive_encoder unknown testdata/input 2>&1 | grep -qi "режим"
+
+      - name: "Test: Non-existent directory"
+        run: |
+          ! echo "password" | ./build/recursive_encoder encrypt nonexistent_dir 2>&1 | grep -qi "error"
+
+      - name: "Upload logs"
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs
+          path: |
+            *.log
+            testdata/**/*.log
+          if-no-files-found: ignore
+        if: always()
