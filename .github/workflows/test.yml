@@ -1,0 +1,74 @@
+name: CI Test Recursive Encoder
+
+on:
+  push:
+    paths:
+      - '**.cpp'
+      - '**.hpp'
+      - '**/CMakeLists.txt'
+      - '.github/workflows/test.yml'
+  pull_request:
+    paths:
+      - '**.cpp'
+      - '**.hpp'
+      - '**/CMakeLists.txt'
+      - '.github/workflows/test.yml'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    env:
+      BUILD_TYPE: Debug
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qtbase5-dev libssl-dev cmake
+
+      - name: Configure CMake
+        run: cmake -S . -B build -DRECURSIVE_ENCODER_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+
+      - name: Build
+        run: cmake --build build --target recursive_encoder --parallel
+
+      - name: Run unit tests
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Prepare test data
+        run: |
+          set -e
+          mkdir -p testdata/input testdata/output
+          echo "testdata" > testdata/input/file1.txt
+
+      - name: Test Case 1: Шифрование одиночного файла
+        run: |
+          echo "password" | ./build/recursive_encoder encrypt testdata/input
+
+      - name: Test Case 2: Дешифрование файла
+        run: |
+          echo "password" | ./build/recursive_encoder decrypt testdata/input
+
+      - name: Test Case 3: Проверка результата дешифрования
+        run: |
+          diff testdata/input/file1.txt <(echo "testdata")
+
+      - name: Test Case 5: Дешифрование с неверным паролем
+        run: |
+          ! echo "wrongpass" | ./build/recursive_encoder decrypt testdata/input 2>&1 | grep -q "успешно"
+
+      - name: Test Case 7: Недостаточно аргументов
+        run: |
+          ! ./build/recursive_encoder encrypt 2>&1 | grep -q "usage"
+
+      - name: Test Case 9: Неверный режим
+        run: |
+          ! ./build/recursive_encoder unknown testdata/input 2>&1 | grep -q "режим"
+
+      - name: Test Case 8: Несуществующая директория
+        run: |
+          echo "# Несуществующая директория"
