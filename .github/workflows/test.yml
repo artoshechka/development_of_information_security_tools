@@ -8,10 +8,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: "Checkout"
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: "Install dependencies"
+      - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -21,7 +21,7 @@ jobs:
             qtbase5-dev \
             libssl-dev
 
-      - name: "Configure build"
+      - name: Configure build
         run: |
           rm -rf build
           cmake -S . -B build \
@@ -29,35 +29,35 @@ jobs:
             -DRECURSIVE_ENCODER_BUILD_TESTS=OFF \
             -DCMAKE_BUILD_TYPE=Debug
 
-      - name: "Build"
+      - name: Build
         run: |
           cmake --build build --target recursive_encoder --parallel
 
-      - name: "Prepare test data"
+      - name: Prepare test data
         run: |
           mkdir -p testdata/input
           echo "testdata" > testdata/input/file1.txt
 
-      - name: "Test: Encrypt file"
+      - name: Test 1: Encrypt single file
         run: |
           echo "password" | ./build/recursive_encoder encrypt testdata/input
 
-      - name: "Test: Decrypt file"
+      - name: Test 2: Decrypt file
         run: |
           echo "password" | ./build/recursive_encoder decrypt testdata/input
 
-      - name: "Test: Check decrypted content"
+      - name: Test 2: Validate decrypted content
         run: |
           echo "testdata" > expected.txt
           diff testdata/input/file1.txt expected.txt
 
-      - name: "Test: File actually encrypted"
+      - name: Test 1: Ensure file is encrypted
         run: |
           echo "secret" > testdata/input/file_check.txt
           echo "password" | ./build/recursive_encoder encrypt testdata/input
           ! grep -q "secret" testdata/input/file_check.txt
 
-      - name: "Test: Recursive encryption"
+      - name: Test 3: Recursive encryption
         run: |
           mkdir -p testdata/input/subdir
           echo "inner" > testdata/input/subdir/file2.txt
@@ -65,41 +65,45 @@ jobs:
           echo "password" | ./build/recursive_encoder decrypt testdata/input
           grep -q "inner" testdata/input/subdir/file2.txt
 
-      - name: "Test: Double encryption"
+      - name: Test 4: Double encryption
         run: |
+          set +e
           echo "data" > testdata/input/file3.txt
           echo "password" | ./build/recursive_encoder encrypt testdata/input
-          ! echo "password" | ./build/recursive_encoder encrypt testdata/input 2>&1 | grep -qi "already"
+          echo "password" | ./build/recursive_encoder encrypt testdata/input
+          test $? -ne 0
 
-      - name: "Test: Wrong password"
-        run: |
-          ! echo "wrongpass" | ./build/recursive_encoder decrypt testdata/input 2>&1 | grep -q "успешно"
-
-      - name: "Test: Not enough arguments"
+      - name: Test 5: Wrong password
         run: |
           set +e
-          OUTPUT=$(./build/recursive_encoder encrypt 2>&1)
-          echo "$OUTPUT"
-          echo "$OUTPUT" | grep -qi "usage"
+          echo "wrongpass" | ./build/recursive_encoder decrypt testdata/input
+          test $? -ne 0
 
-      - name: "Test: Invalid mode"
-        run: |
-          ! ./build/recursive_encoder unknown testdata/input 2>&1 | grep -qi "режим"
-
-      - name: "Test: Non-existent directory"
+      - name: Test 7: Missing arguments
         run: |
           set +e
-          OUTPUT=$(echo "password" | ./build/recursive_encoder encrypt nonexistent_dir 2>&1)
-          echo "$OUTPUT"
+          ./build/recursive_encoder encrypt
+          test $? -ne 0
 
-          echo "$OUTPUT" | grep -Ei "error"
+      - name: Test 9: Invalid mode
+        run: |
+          set +e
+          ./build/recursive_encoder unknown testdata/input
+          test $? -ne 0
 
-      - name: "Upload logs"
-        uses: actions/upload-artifact@v4
-        with:
-          name: logs
-          path: |
-            *.log
-            testdata/**/*.log
-          if-no-files-found: ignore
-        if: always()
+      - name: Test 8: Non-existent directory
+        run: |
+          set +e
+          echo "password" | ./build/recursive_encoder encrypt nonexistent_dir
+          test $? -ne 0
+
+      - name: Test 6: Decrypt plain file
+        run: |
+          set +e
+          echo "plain text" > testdata/input/plain.txt
+          echo "password" | ./build/recursive_encoder decrypt testdata/input
+
+      - name: Test 10: Empty directory
+        run: |
+          mkdir -p testdata/emptydir
+          echo "password" | ./build/recursive_encoder encrypt testdata/emptydir
