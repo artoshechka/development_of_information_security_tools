@@ -24,3 +24,15 @@ target_link_libraries(${PROJECT_NAME}
     PUBLIC
         Qt${QT_VERSION_MAJOR}::Core
 )
+
+create_test(
+    logger_test
+    test/app_logger_test.cpp
+    test/app_sys_logger_test.cpp
+    test/log_entry_stream_test.cpp
+    test/logger_factory_test.cpp
+    test/log_settings_test.cpp
+    test/thread_safe_logger_test.cpp
+    LINK_LIBS
+        ${PROJECT_NAME}
+)

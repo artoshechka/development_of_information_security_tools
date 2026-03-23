@@ -275,11 +275,36 @@ ctest --test-dir build --output-on-failure
 
 ### Генерация отчета о покрытии
 
-Ниже команда полного цикла: конфигурация coverage-сборки, сборка приложения и тестов,
+Ниже последовательность полного цикла: чистая coverage-сборка, сборка приложения и тестов,
 прогон тестов и генерация HTML-отчета покрытия только по исходникам .cpp проекта.
 
 ```bash
-cmake -S . -B build-coverage -DRECURSIVE_ENCODER_BUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="--coverage -O0 -g" && cmake --build build-coverage --target recursive_encoder build_tests --parallel && ctest --test-dir build-coverage --output-on-failure && (cd build-coverage && rm -f coverage_cpp* && gcovr -r .. --gcov-executable "$(xcrun --find llvm-cov) gcov" --filter ".*/(main\.cpp|recursive_stepper/src/.*\.cpp|logger/src/.*\.cpp|crypto_manager/src/.*\.cpp)$" --exclude ".*/test/.*" --exclude ".*/CMakeFiles/.*" --exclude ".*/build-coverage/.*" --exclude ".*CMakeCXXCompilerId\.cpp$" --exclude ".*\.hpp$" --html-details coverage_cpp.html --print-summary)
+rm -rf build-coverage
+cmake -S . -B build-coverage -DRECURSIVE_ENCODER_BUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="--coverage -O0 -g"
+cmake --build build-coverage --target recursive_encoder build_tests --parallel
+ctest --test-dir build-coverage --output-on-failure
+
+if command -v llvm-cov >/dev/null 2>&1; then
+    GCOV_EXEC="$(command -v llvm-cov) gcov"
+elif command -v xcrun >/dev/null 2>&1 && xcrun --find llvm-cov >/dev/null 2>&1; then
+    GCOV_EXEC="$(xcrun --find llvm-cov) gcov"
+else
+    GCOV_EXEC="gcov"
+fi
+
+cd build-coverage
+rm -f coverage_cpp*
+find . -name '*.gcov' -delete
+gcovr -r .. \
+    --gcov-executable "$GCOV_EXEC" \
+    --filter ".*/(recursive_stepper/src/.*\.cpp|logger/src/.*\.cpp|crypto_manager/src/.*\.cpp)$" \
+    --exclude ".*main\.cpp$" \
+    --exclude ".*/test/.*" \
+    --exclude ".*/CMakeFiles/.*" \
+    --exclude ".*/build-coverage/.*" \
+    --exclude ".*CMakeCXXCompilerId\.cpp$" \
+    --exclude ".*\.hpp$" \
+    --html-details coverage_cpp.html
 ```
 
 Открыть отчет:

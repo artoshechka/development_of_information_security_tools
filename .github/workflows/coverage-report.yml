@@ -27,6 +27,7 @@ jobs:
 
       - name: Configure coverage build
         run: |
+          rm -rf build-coverage
           cmake -S . -B build-coverage \
             -G Ninja \
             -DRECURSIVE_ENCODER_BUILD_TESTS=ON \
@@ -45,10 +46,12 @@ jobs:
         run: |
           cd build-coverage
           rm -f coverage_cpp*
+          find . -name '*.gcov' -delete
           gcovr -r .. \
+            --gcov-executable gcov \
             --html-details coverage_cpp.html \
-            --print-summary \
-            --filter ".*/(main\\.cpp|recursive_stepper/src/.*\\.cpp|logger/src/.*\\.cpp|crypto_manager/src/.*\\.cpp)$" \
+            --filter ".*/(recursive_stepper/src/.*\\.cpp|logger/src/.*\\.cpp|crypto_manager/src/.*\\.cpp)$" \
+            --exclude ".*main\\.cpp$" \
             --exclude ".*/test/.*" \
             --exclude ".*/CMakeFiles/.*" \
             --exclude ".*/build-coverage/.*" \
