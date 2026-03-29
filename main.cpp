@@ -24,12 +24,7 @@
 
 namespace
 {
-/// @brief Сообщение об ошибке при неправильном использовании программы
-const QString errorMsg =
-    "Usage:\nprogram encrypt <path>\nprogram decrypt <path>\n"
-    "Backends: openssl\n";
-
-/// @brief Скрытое чтение пароля из консоли (для Unix/macOS).
+/// @brief Скрытое чтение пароля из консоли
 static QString ReadPassword(QTextStream& cin, QTextStream& cout)
 {
     cout << "Enter password: ";
@@ -104,18 +99,16 @@ static void SecureClear(QString& data)
 /// @return код завершения приложения
 int main(int argc, char* argv[])
 {
-    QCoreApplication app(argc, argv);
     QTextStream cin(stdin);
     QTextStream cout(stdout);
-    QTextStream cerr(stderr);
+
     const auto appLogger = logger::GetLogger<logger::AppLoggerTag>();
     const auto appSysLogger = logger::GetLogger<logger::AppSysLoggerTag>();
 
     QString mode;
     QString path;
-    QString backendName = "openssl";
+    QString strategyType = "openssl";
 
-    // Проверка аргументов
     if (argc >= 3)
     {
         mode = argv[1];
@@ -123,19 +116,18 @@ int main(int argc, char* argv[])
 
         if (argc >= 4)
         {
-            backendName = QString::fromLocal8Bit(argv[3]).toLower();
+            strategyType = QString::fromLocal8Bit(argv[3]).toLower();
 
-            if (backendName != "openssl")
+            if (strategyType != "openssl")
             {
-                LogError(appLogger) << "Unknown backend: " << backendName;
-                cerr << errorMsg;
+                LogError(appLogger) << "Unknown strategy: " << strategyType << ". Supported strategies: openssl";
                 return 1;
             }
         }
     } else
     {
-        LogError(appLogger) << "Invalid arguments: expected at least mode and path";
-        cerr << errorMsg;
+        LogError(appLogger) << "Invalid arguments: expected at least mode and path"
+                            << ". Supported modes: encrypt, decrypt";
         return 1;
     }
 
@@ -163,16 +155,16 @@ int main(int argc, char* argv[])
     }
 
     const auto& stepper = std::make_unique<recursive_stepper::RecursiveStepper>(path, appSysLogger);
-    std::shared_ptr<crypto_manager::ICryptoManager> encoder;
+    std::shared_ptr<crypto_manager::ICryptoManager> cryptoManager;
 
-    if (backendName == "openssl")
+    if (strategyType == "openssl")
     {
-        encoder = crypto_manager::GetCryptoManager<crypto_manager::OpenSslTag>(appSysLogger);
+        cryptoManager = crypto_manager::GetCryptoManager<crypto_manager::OpenSslTag>(appSysLogger);
     }
 
-    if (!encoder)
+    if (!cryptoManager)
     {
-        LogError(appLogger) << "Failed to create crypto manager for selected backend";
+        LogError(appLogger) << "Failed to create crypto manager for selected strategy: " << strategyType;
         SecureClear(password);
         return 1;
     }
@@ -185,26 +177,23 @@ int main(int argc, char* argv[])
 
         if (mode == "encrypt")
         {
-            result = encoder->EncryptFile(file, password);
+            result = cryptoManager->EncryptFile(file, password);
         } else if (mode == "decrypt")
         {
-            result = encoder->DecryptFile(file, password);
+            result = cryptoManager->DecryptFile(file, password);
         } else
         {
-            LogError(appLogger) << "Invalid mode: " << mode;
+            LogError(appLogger) << "Invalid mode: " << mode << ". Supported modes: encrypt, decrypt";
             SecureClear(password);
-            cerr << errorMsg;
             return 1;
         }
 
         if (result)
         {
             LogInfo(appLogger) << "File processed: " << file;
-            cout << "File processed: " << file << "\n";
         } else
         {
             LogWarning(appLogger) << "File skipped: " << file;
-            cout << "File skipped: " << file << "\n";
         }
     }
 
