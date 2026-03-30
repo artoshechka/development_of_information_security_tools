@@ -227,6 +227,9 @@ bool OpenSslCryptoStrategy::PerformEncryptionOperation(const QString& filePath, 
         return false;
     }
 
+#ifdef _WIN32
+    inputFile.close();
+#endif
     QByteArray authTag(kAesGcmTagSize, Qt::Uninitialized);
     if (!EVP_CIPHER_CTX_ctrl(cipherContext.get(), EVP_CTRL_GCM_GET_TAG, static_cast<int>(authTag.size()),
                              authTag.data()) ||
@@ -376,6 +379,9 @@ bool OpenSslCryptoStrategy::PerformDecryptionOperation(const QString& filePath, 
         return false;
     }
 
+#ifdef _WIN32
+    inputFile.close();
+#endif
     if ((finalLength > 0 && !writeAll(outputFile, finalChunk.constData(), static_cast<qint64>(finalLength))) ||
         !outputFile.commit())
     {
