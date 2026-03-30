@@ -16,16 +16,22 @@ class OpenSslCryptoStrategy final : public ICryptoStrategy
    public:
     /// @brief Конструктор стратегии с внедрением логгера.
     /// @param[in] logger Логгер для системных ошибок.
-    explicit OpenSslCryptoStrategy(const std::shared_ptr<logger::ILogger>& logger);
+    OpenSslCryptoStrategy(const std::shared_ptr<logger::ILogger>& logger);
 
     /// @brief Выполняет шифрование файла.
-    bool EncryptFile(const QString& filePath, const QString& password) override;
+    /// @param[in] filePath Полный путь к файлу.
+    /// @param[in] password Пароль для генерации ключа.
+    /// @return `true`, если операция завершена успешно.
+    bool PerformEncryptionOperation(const QString& filePath, const QString& password) override;
 
     /// @brief Выполняет дешифрование файла.
-    bool DecryptFile(const QString& filePath, const QString& password) override;
+    /// @param[in] filePath Полный путь к файлу.
+    /// @param[in] password Пароль для генерации ключа.
+    /// @return `true`, если операция завершена успешно.
+    bool PerformDecryptionOperation(const QString& filePath, const QString& password) override;
 
    private:
-    std::shared_ptr<logger::ILogger> logger_;
+    std::shared_ptr<logger::ILogger> logger_;  //< Логгер
 };
 
 }  // namespace crypto_manager

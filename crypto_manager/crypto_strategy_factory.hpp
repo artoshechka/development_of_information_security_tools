@@ -13,14 +13,14 @@ namespace crypto_manager
 /// @brief Fwd decl тега OpenSSL для фабрик.
 struct OpenSslTag;
 
-/// @brief Создает криптографическую стратегию по backend-тегу.
-/// @tparam TBackendTag Тип тега backend'а.
+/// @brief Создает криптографическую стратегию по тегу.
+/// @tparam TBackendTag Тип тега
 /// @param[in] logger Логгер для системных ошибок.
 /// @return Уникальный указатель на стратегию.
 template <typename TBackendTag>
 std::unique_ptr<ICryptoStrategy> CreateCryptoStrategy(const std::shared_ptr<logger::ILogger>& logger);
 
-/// @brief Специализация фабрики для OpenSSL backend'а.
+/// @brief Специализация фабрики для OpenSSL
 template <>
 std::unique_ptr<ICryptoStrategy> CreateCryptoStrategy<OpenSslTag>(const std::shared_ptr<logger::ILogger>& logger);
 

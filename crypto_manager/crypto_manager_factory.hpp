@@ -19,13 +19,13 @@ std::shared_ptr<ICryptoManager> CreateCryptoManager(std::unique_ptr<ICryptoStrat
                                                     const std::shared_ptr<logger::ILogger>& logger);
 
 /// @brief Создает менеджер криптографических операций по backend-тегу.
-/// @tparam TBackendTag Тип тега backend'а.
+/// @tparam TBackendTag Тип тега.
 /// @param[in] logger Логгер для системных ошибок.
 /// @return Умный указатель на менеджер криптографических операций.
 template <typename TBackendTag>
 std::shared_ptr<ICryptoManager> GetCryptoManager(const std::shared_ptr<logger::ILogger>& logger);
 
-/// @brief Специализация фабрики менеджера для OpenSSL backend'а.
+/// @brief Специализация фабрики менеджера для OpenSSL.
 template <>
 std::shared_ptr<ICryptoManager> GetCryptoManager<OpenSslTag>(const std::shared_ptr<logger::ILogger>& logger);
 

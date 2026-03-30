@@ -23,12 +23,12 @@ TEST(OpenSslCryptoStrategyTest, EncryptDecryptRoundTrip)
 
     crypto_manager::OpenSslCryptoStrategy strategy(logger);
 
-    ASSERT_TRUE(strategy.EncryptFile(filePath, "pwd"));
+    ASSERT_TRUE(strategy.PerformEncryptionOperation(filePath, "pwd"));
 
     const QString encryptedText = ReadAllText(filePath);
     EXPECT_FALSE(encryptedText.contains(QString::fromUtf8(source)));
 
-    ASSERT_TRUE(strategy.DecryptFile(filePath, "pwd"));
+    ASSERT_TRUE(strategy.PerformDecryptionOperation(filePath, "pwd"));
     EXPECT_EQ(ReadAllText(filePath).toUtf8(), source);
 }
 
@@ -45,8 +45,8 @@ TEST(OpenSslCryptoStrategyTest, EncryptRejectsAlreadyEncryptedFile)
 
     crypto_manager::OpenSslCryptoStrategy strategy(logger);
 
-    ASSERT_TRUE(strategy.EncryptFile(filePath, "pwd"));
-    EXPECT_FALSE(strategy.EncryptFile(filePath, "pwd"));
+    ASSERT_TRUE(strategy.PerformEncryptionOperation(filePath, "pwd"));
+    EXPECT_FALSE(strategy.PerformEncryptionOperation(filePath, "pwd"));
 }
 
 TEST(OpenSslCryptoStrategyTest, DecryptRejectsPlainFile)
@@ -62,7 +62,7 @@ TEST(OpenSslCryptoStrategyTest, DecryptRejectsPlainFile)
 
     crypto_manager::OpenSslCryptoStrategy strategy(logger);
 
-    EXPECT_FALSE(strategy.DecryptFile(filePath, "pwd"));
+    EXPECT_FALSE(strategy.PerformDecryptionOperation(filePath, "pwd"));
 }
 
 TEST(OpenSslCryptoStrategyTest, DecryptFailsWithWrongPassword)
@@ -78,8 +78,8 @@ TEST(OpenSslCryptoStrategyTest, DecryptFailsWithWrongPassword)
 
     crypto_manager::OpenSslCryptoStrategy strategy(logger);
 
-    ASSERT_TRUE(strategy.EncryptFile(filePath, "correct"));
-    EXPECT_FALSE(strategy.DecryptFile(filePath, "wrong"));
+    ASSERT_TRUE(strategy.PerformEncryptionOperation(filePath, "correct"));
+    EXPECT_FALSE(strategy.PerformDecryptionOperation(filePath, "wrong"));
 }
 
 TEST(OpenSslCryptoStrategyTest, EncryptFailsForMissingInputFile)
@@ -92,7 +92,7 @@ TEST(OpenSslCryptoStrategyTest, EncryptFailsForMissingInputFile)
 
     crypto_manager::OpenSslCryptoStrategy strategy(logger);
 
-    EXPECT_FALSE(strategy.EncryptFile(tempDir.path() + "/missing.bin", "pwd"));
+    EXPECT_FALSE(strategy.PerformEncryptionOperation(tempDir.path() + "/missing.bin", "pwd"));
 }
 
 TEST(OpenSslCryptoStrategyTest, DecryptFailsForMissingInputFile)
@@ -105,7 +105,7 @@ TEST(OpenSslCryptoStrategyTest, DecryptFailsForMissingInputFile)
 
     crypto_manager::OpenSslCryptoStrategy strategy(logger);
 
-    EXPECT_FALSE(strategy.DecryptFile(tempDir.path() + "/missing.enc", "pwd"));
+    EXPECT_FALSE(strategy.PerformDecryptionOperation(tempDir.path() + "/missing.enc", "pwd"));
 }
 
 TEST(OpenSslCryptoStrategyTest, DecryptFailsForInvalidSaltSize)
@@ -123,7 +123,7 @@ TEST(OpenSslCryptoStrategyTest, DecryptFailsForInvalidSaltSize)
 
     crypto_manager::OpenSslCryptoStrategy strategy(logger);
 
-    EXPECT_FALSE(strategy.DecryptFile(filePath, "pwd"));
+    EXPECT_FALSE(strategy.PerformDecryptionOperation(filePath, "pwd"));
 }
 
 TEST(OpenSslCryptoStrategyTest, DecryptFailsForInvalidNonceSize)
@@ -144,7 +144,7 @@ TEST(OpenSslCryptoStrategyTest, DecryptFailsForInvalidNonceSize)
 
     crypto_manager::OpenSslCryptoStrategy strategy(logger);
 
-    EXPECT_FALSE(strategy.DecryptFile(filePath, "pwd"));
+    EXPECT_FALSE(strategy.PerformDecryptionOperation(filePath, "pwd"));
 }
 
 TEST(OpenSslCryptoStrategyTest, DecryptFailsForTooSmallEncryptedFile)
@@ -165,7 +165,7 @@ TEST(OpenSslCryptoStrategyTest, DecryptFailsForTooSmallEncryptedFile)
 
     crypto_manager::OpenSslCryptoStrategy strategy(logger);
 
-    EXPECT_FALSE(strategy.DecryptFile(filePath, "pwd"));
+    EXPECT_FALSE(strategy.PerformDecryptionOperation(filePath, "pwd"));
 }
 
 TEST(OpenSslCryptoStrategyTest, DecryptFailsForTruncatedAuthTag)
@@ -182,7 +182,7 @@ TEST(OpenSslCryptoStrategyTest, DecryptFailsForTruncatedAuthTag)
     WriteAllText(filePath, QByteArray("secret"));
 
     crypto_manager::OpenSslCryptoStrategy strategy(logger);
-    ASSERT_TRUE(strategy.EncryptFile(filePath, "pwd"));
+    ASSERT_TRUE(strategy.PerformEncryptionOperation(filePath, "pwd"));
 
     QFile file(filePath);
     ASSERT_TRUE(file.open(QIODevice::ReadOnly));
@@ -193,5 +193,5 @@ TEST(OpenSslCryptoStrategyTest, DecryptFailsForTruncatedAuthTag)
     encrypted.chop(kAesGcmTagSize - 1);
     WriteAllText(filePath, encrypted);
 
-    EXPECT_FALSE(strategy.DecryptFile(filePath, "pwd"));
+    EXPECT_FALSE(strategy.PerformDecryptionOperation(filePath, "pwd"));
 }

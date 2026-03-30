@@ -15,7 +15,7 @@ CryptoManager::CryptoManager(std::unique_ptr<ICryptoStrategy> cryptoStrategy,
 
 bool CryptoManager::EncryptFile(const QString& filePath, const QString& password)
 {
-    const bool result = cryptoStrategy_->EncryptFile(filePath, password);
+    const bool result = cryptoStrategy_->PerformEncryptionOperation(filePath, password);
     if (!result)
     {
         LogError(logger_) << "EncryptFile failed in strategy for file: " << filePath;
@@ -26,7 +26,7 @@ bool CryptoManager::EncryptFile(const QString& filePath, const QString& password
 
 bool CryptoManager::DecryptFile(const QString& filePath, const QString& password)
 {
-    const bool result = cryptoStrategy_->DecryptFile(filePath, password);
+    const bool result = cryptoStrategy_->PerformDecryptionOperation(filePath, password);
     if (!result)
     {
         LogError(logger_) << "DecryptFile failed in strategy for file: " << filePath;

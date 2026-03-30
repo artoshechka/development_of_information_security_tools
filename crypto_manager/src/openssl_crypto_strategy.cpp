@@ -22,11 +22,15 @@ namespace
 {
 
 /// @brief Безопасная запись буфера в файл с проверкой полного количества байт.
+/// @param[in, out] outputFile Файл для записи.
+/// @param[in,out] data Буфер данных для записи.
+/// @param[in] size Количество байт для записи.
 static bool writeAll(QSaveFile& outputFile, const char* data, const qint64 size)
 {
     return outputFile.write(data, size) == size;
 }
-
+/// @brief Безопасное очищение вектора.
+/// @param data Вектор для очищения.
 static void secureClearVector(std::vector<unsigned char>& data)
 {
     if (!data.empty())
@@ -37,6 +41,9 @@ static void secureClearVector(std::vector<unsigned char>& data)
 }
 
 /// @brief Чтение и шифрование файла по частям.
+/// @param[in] inputFile Файл для чтения.
+/// @param[in, out] outputFile Файл для записи.
+/// @param[in] cipherContext Инициализированный контекст шифрования OpenSSL.
 static bool encryptStream(QFile& inputFile, QSaveFile& outputFile, EVP_CIPHER_CTX* cipherContext)
 {
     while (!inputFile.atEnd())
@@ -80,6 +87,10 @@ static bool encryptStream(QFile& inputFile, QSaveFile& outputFile, EVP_CIPHER_CT
 }
 
 /// @brief Чтение и дешифрование файла по частям.
+/// @param[in] inputFile Файл для чтения.
+/// @param[in, out] outputFile Файл для записи.
+/// @param[in] cipherContext Инициализированный контекст дешифрования OpenSSL
+/// @param[in] encryptedPayloadSize Размер зашифрованной полезной нагрузки для чтения.
 static bool decryptStream(QFile& inputFile, QSaveFile& outputFile, EVP_CIPHER_CTX* cipherContext,
                           qint64 encryptedPayloadSize)
 {
@@ -121,7 +132,7 @@ OpenSslCryptoStrategy::OpenSslCryptoStrategy(const std::shared_ptr<logger::ILogg
 {
 }
 
-bool OpenSslCryptoStrategy::EncryptFile(const QString& filePath, const QString& password)
+bool OpenSslCryptoStrategy::PerformEncryptionOperation(const QString& filePath, const QString& password)
 {
     QFile inputFile(filePath);
 
@@ -238,7 +249,7 @@ bool OpenSslCryptoStrategy::EncryptFile(const QString& filePath, const QString& 
     return true;
 }
 
-bool OpenSslCryptoStrategy::DecryptFile(const QString& filePath, const QString& password)
+bool OpenSslCryptoStrategy::PerformDecryptionOperation(const QString& filePath, const QString& password)
 {
     QFile inputFile(filePath);
     if (!inputFile.open(QIODevice::ReadOnly))

@@ -33,8 +33,8 @@ class CryptoManager final : public ICryptoManager
     bool DecryptFile(const QString& filePath, const QString& password) override;
 
    private:
-    std::unique_ptr<ICryptoStrategy> cryptoStrategy_;
-    std::shared_ptr<logger::ILogger> logger_;
+    std::unique_ptr<ICryptoStrategy> cryptoStrategy_;  //< Стратегия криптографии
+    std::shared_ptr<logger::ILogger> logger_;          //< Логгер
 };
 
 }  // namespace crypto_manager

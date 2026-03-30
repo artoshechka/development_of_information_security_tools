@@ -17,7 +17,7 @@ class FakeCryptoStrategy final : public crypto_manager::ICryptoStrategy
     {
     }
 
-    bool EncryptFile(const QString& filePath, const QString& password) override
+    bool PerformEncryptionOperation(const QString& filePath, const QString& password) override
     {
         lastEncryptFilePath_ = filePath;
         lastEncryptPassword_ = password;
@@ -25,7 +25,7 @@ class FakeCryptoStrategy final : public crypto_manager::ICryptoStrategy
         return encryptResult_;
     }
 
-    bool DecryptFile(const QString& filePath, const QString& password) override
+    bool PerformDecryptionOperation(const QString& filePath, const QString& password) override
     {
         lastDecryptFilePath_ = filePath;
         lastDecryptPassword_ = password;

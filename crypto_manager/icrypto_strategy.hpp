@@ -19,13 +19,13 @@ class ICryptoStrategy
     /// @param[in] filePath Полный путь к файлу.
     /// @param[in] password Пароль для генерации ключа.
     /// @return `true`, если операция завершена успешно.
-    virtual bool EncryptFile(const QString& filePath, const QString& password) = 0;
+    virtual bool PerformEncryptionOperation(const QString& filePath, const QString& password) = 0;
 
     /// @brief Выполняет дешифрование файла.
     /// @param[in] filePath Полный путь к зашифрованному файлу.
     /// @param[in] password Пароль для генерации ключа.
     /// @return `true`, если операция завершена успешно.
-    virtual bool DecryptFile(const QString& filePath, const QString& password) = 0;
+    virtual bool PerformDecryptionOperation(const QString& filePath, const QString& password) = 0;
 };
 
 }  // namespace crypto_manager
