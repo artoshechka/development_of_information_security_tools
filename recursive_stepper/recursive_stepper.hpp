@@ -29,9 +29,15 @@ class RecursiveStepper
 
     /// @brief Строит индекс файловой системы.
     /// @return Список путей ко всем найденным файлам.
+    /// @note Пропускает скрытые файлы, ярлыки и системные файлы на всех платформах.
     FileSystemIndex BuildIndex() const;
 
    private:
+    /// @brief Проверяет, нужно ли пропустить файл.
+    /// @param[in] fileInfo Информация о файле.
+    /// @return `true`, если файл нужно пропустить, иначе `false`.
+    bool ShouldSkipFile(const QFileInfo& fileInfo) const;
+
     QString dirPath_;  ///< Путь к директории, с которой начинается обход.
     std::shared_ptr<logger::ILogger> logger_;
 };

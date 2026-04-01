@@ -40,35 +40,28 @@ static void secureClearVector(std::vector<unsigned char>& data)
     }
 }
 
-/// @brief Чтение и шифрование файла по частям.
-/// @param[in] inputFile Файл для чтения.
-/// @param[in, out] outputFile Файл для записи.
+/// @brief Шифрование содержимого файла целиком.
+/// @param[in] plaintext Исходные данные для шифрования.
+/// @param[out] encryptedData Зашифрованные данные.
 /// @param[in] cipherContext Инициализированный контекст шифрования OpenSSL.
-static bool encryptStream(QFile& inputFile, QSaveFile& outputFile, EVP_CIPHER_CTX* cipherContext)
+static bool encryptData(const QByteArray& plaintext, QByteArray& encryptedData, EVP_CIPHER_CTX* cipherContext)
 {
-    while (!inputFile.atEnd())
+    encryptedData.clear();
+    if (plaintext.isEmpty())
     {
-        const QByteArray chunk = inputFile.read(kFileProcessingChunkSize);
-
-        if (chunk.isEmpty() && inputFile.error() != QFileDevice::NoError)
-        {
-            return false;
-        }
-
-        QByteArray encryptedChunk(chunk.size() + EVP_MAX_BLOCK_LENGTH, 0);
-        int outputLength = 0;
-
-        if (!EVP_EncryptUpdate(cipherContext, reinterpret_cast<unsigned char*>(encryptedChunk.data()), &outputLength,
-                               reinterpret_cast<const unsigned char*>(chunk.constData()), chunk.size()))
-        {
-            return false;
-        }
-
-        if (outputLength > 0 && !writeAll(outputFile, encryptedChunk.constData(), static_cast<qint64>(outputLength)))
-        {
-            return false;
-        }
+        return true;
     }
+
+    QByteArray buffer(plaintext.size() + EVP_MAX_BLOCK_LENGTH, 0);
+    int outputLength = 0;
+
+    if (!EVP_EncryptUpdate(cipherContext, reinterpret_cast<unsigned char*>(buffer.data()), &outputLength,
+                           reinterpret_cast<const unsigned char*>(plaintext.constData()), plaintext.size()))
+    {
+        return false;
+    }
+
+    encryptedData.append(buffer.constData(), outputLength);
 
     QByteArray finalChunk(EVP_MAX_BLOCK_LENGTH, 0);
     int finalLength = 0;
@@ -78,49 +71,48 @@ static bool encryptStream(QFile& inputFile, QSaveFile& outputFile, EVP_CIPHER_CT
         return false;
     }
 
-    if (finalLength > 0 && !writeAll(outputFile, finalChunk.constData(), static_cast<qint64>(finalLength)))
+    if (finalLength > 0)
     {
-        return false;
+        encryptedData.append(finalChunk.constData(), finalLength);
     }
 
     return true;
 }
 
-/// @brief Чтение и дешифрование файла по частям.
-/// @param[in] inputFile Файл для чтения.
-/// @param[in, out] outputFile Файл для записи.
-/// @param[in] cipherContext Инициализированный контекст дешифрования OpenSSL
-/// @param[in] encryptedPayloadSize Размер зашифрованной полезной нагрузки для чтения.
-static bool decryptStream(QFile& inputFile, QSaveFile& outputFile, EVP_CIPHER_CTX* cipherContext,
-                          qint64 encryptedPayloadSize)
+/// @brief Дешифрование содержимого файла целиком.
+/// @param[in] ciphertext Зашифрованные данные.
+/// @param[out] decryptedData Расшифрованные данные.
+/// @param[in] cipherContext Инициализированный контекст дешифрования OpenSSL.
+static bool decryptData(const QByteArray& ciphertext, QByteArray& decryptedData, EVP_CIPHER_CTX* cipherContext)
 {
-    qint64 bytesRemaining = encryptedPayloadSize;
-
-    while (bytesRemaining > 0)
+    decryptedData.clear();
+    if (ciphertext.isEmpty())
     {
-        const qint64 bytesToRead = std::min(bytesRemaining, kFileProcessingChunkSize);
-        const QByteArray chunk = inputFile.read(bytesToRead);
+        return true;
+    }
 
-        if (chunk.size() != bytesToRead)
-        {
-            return false;
-        }
+    QByteArray buffer(ciphertext.size() + EVP_MAX_BLOCK_LENGTH, 0);
+    int outputLength = 0;
 
-        bytesRemaining -= chunk.size();
+    if (!EVP_DecryptUpdate(cipherContext, reinterpret_cast<unsigned char*>(buffer.data()), &outputLength,
+                           reinterpret_cast<const unsigned char*>(ciphertext.constData()), ciphertext.size()))
+    {
+        return false;
+    }
 
-        QByteArray decryptedChunk(chunk.size() + EVP_MAX_BLOCK_LENGTH, 0);
-        int outputLength = 0;
+    decryptedData.append(buffer.constData(), outputLength);
 
-        if (!EVP_DecryptUpdate(cipherContext, reinterpret_cast<unsigned char*>(decryptedChunk.data()), &outputLength,
-                               reinterpret_cast<const unsigned char*>(chunk.constData()), chunk.size()))
-        {
-            return false;
-        }
+    QByteArray finalChunk(EVP_MAX_BLOCK_LENGTH, 0);
+    int finalLength = 0;
 
-        if (outputLength > 0 && !writeAll(outputFile, decryptedChunk.constData(), static_cast<qint64>(outputLength)))
-        {
-            return false;
-        }
+    if (EVP_DecryptFinal_ex(cipherContext, reinterpret_cast<unsigned char*>(finalChunk.data()), &finalLength) <= 0)
+    {
+        return false;
+    }
+
+    if (finalLength > 0)
+    {
+        decryptedData.append(finalChunk.constData(), finalLength);
     }
 
     return true;
@@ -147,14 +139,27 @@ bool OpenSslCryptoStrategy::PerformEncryptionOperation(const QString& filePath, 
     if (filePrefix == kFileMagicSignature)
     {
         LogWarning(logger_) << "File is already encrypted: " << filePath;
+        inputFile.close();
         return false;
     }
 
     if (!inputFile.seek(0))
     {
         LogError(logger_) << "Failed to seek input file: " << filePath;
+        inputFile.close();
         return false;
     }
+
+    const QByteArray fileContent = inputFile.readAll();
+
+    if (inputFile.error() != QFileDevice::NoError)
+    {
+        LogError(logger_) << "Failed to read input file: " << filePath;
+        inputFile.close();
+        return false;
+    }
+
+    inputFile.close();
 
     QSaveFile outputFile(filePath);
     if (!outputFile.open(QIODevice::WriteOnly))
@@ -214,12 +219,10 @@ bool OpenSslCryptoStrategy::PerformEncryptionOperation(const QString& filePath, 
         return false;
     }
 
-    if (!writeAll(outputFile, kFileMagicSignature.constData(), kFileMagicSignature.size()) ||
-        !writeAll(outputFile, passwordSalt.constData(), passwordSalt.size()) ||
-        !writeAll(outputFile, reinterpret_cast<const char*>(nonce.data()), static_cast<qint64>(nonce.size())) ||
-        !encryptStream(inputFile, outputFile, cipherContext.get()))
+    QByteArray encryptedData;
+    if (!encryptData(fileContent, encryptedData, cipherContext.get()))
     {
-        LogError(logger_) << "Failed during encrypted stream write";
+        LogError(logger_) << "Failed to encrypt data";
         outputFile.cancelWriting();
         SecureClear(encryptionKey);
         secureClearVector(nonce);
@@ -227,9 +230,19 @@ bool OpenSslCryptoStrategy::PerformEncryptionOperation(const QString& filePath, 
         return false;
     }
 
-#ifdef _WIN32
-    inputFile.close();
-#endif
+    if (!writeAll(outputFile, kFileMagicSignature.constData(), kFileMagicSignature.size()) ||
+        !writeAll(outputFile, passwordSalt.constData(), passwordSalt.size()) ||
+        !writeAll(outputFile, reinterpret_cast<const char*>(nonce.data()), static_cast<qint64>(nonce.size())) ||
+        !writeAll(outputFile, encryptedData.constData(), encryptedData.size()))
+    {
+        LogError(logger_) << "Failed to write encrypted data to file";
+        outputFile.cancelWriting();
+        SecureClear(encryptionKey);
+        secureClearVector(nonce);
+        SecureClear(passwordSalt);
+        return false;
+    }
+
     QByteArray authTag(kAesGcmTagSize, Qt::Uninitialized);
     if (!EVP_CIPHER_CTX_ctrl(cipherContext.get(), EVP_CTRL_GCM_GET_TAG, static_cast<int>(authTag.size()),
                              authTag.data()) ||
@@ -261,11 +274,22 @@ bool OpenSslCryptoStrategy::PerformDecryptionOperation(const QString& filePath, 
         return false;
     }
 
+    const qint64 fileSize = inputFile.size();
+    const qint64 headerSize = kFileMagicSignature.size() + kPasswordSaltSize + kAesGcmNonceSize;
+
+    if (fileSize < headerSize + kAesGcmTagSize)
+    {
+        LogError(logger_) << "Encrypted file is too small";
+        inputFile.close();
+        return false;
+    }
+
     const QByteArray fileSignature = inputFile.read(kFileMagicSignature.size());
 
     if (fileSignature != kFileMagicSignature)
     {
         LogWarning(logger_) << "File does not match encrypted format: " << filePath;
+        inputFile.close();
         return false;
     }
 
@@ -274,6 +298,7 @@ bool OpenSslCryptoStrategy::PerformDecryptionOperation(const QString& filePath, 
     if (passwordSalt.size() != kPasswordSaltSize)
     {
         LogError(logger_) << "Invalid salt size in encrypted file";
+        inputFile.close();
         return false;
     }
 
@@ -282,19 +307,31 @@ bool OpenSslCryptoStrategy::PerformDecryptionOperation(const QString& filePath, 
     if (nonce.size() != kAesGcmNonceSize)
     {
         LogError(logger_) << "Invalid nonce size in encrypted file";
+        inputFile.close();
         return false;
     }
 
-    const qint64 headerSize = kFileMagicSignature.size() + kPasswordSaltSize + kAesGcmNonceSize;
-    const qint64 encryptedFileSize = inputFile.size();
+    const qint64 encryptedPayloadSize = fileSize - headerSize - kAesGcmTagSize;
+    const QByteArray encryptedData = inputFile.read(encryptedPayloadSize);
 
-    if (encryptedFileSize < headerSize + kAesGcmTagSize)
+    if (encryptedData.size() != encryptedPayloadSize)
     {
-        LogError(logger_) << "Encrypted file is too small";
+        LogError(logger_) << "Failed to read encrypted payload";
+        inputFile.close();
         return false;
     }
 
-    const qint64 encryptedPayloadSize = encryptedFileSize - headerSize - kAesGcmTagSize;
+    QByteArray authTag = inputFile.read(kAesGcmTagSize);
+
+    if (authTag.size() != kAesGcmTagSize)
+    {
+        LogError(logger_) << "Invalid authentication tag size in encrypted file";
+        inputFile.close();
+        SecureClear(authTag);
+        return false;
+    }
+
+    inputFile.close();
 
     QByteArray decryptionKey;
     if (!DeriveEncryptionKey(password, passwordSalt, decryptionKey))
@@ -302,6 +339,44 @@ bool OpenSslCryptoStrategy::PerformDecryptionOperation(const QString& filePath, 
         LogError(logger_) << "Failed to derive decryption key";
         SecureClear(passwordSalt);
         SecureClear(nonce);
+        SecureClear(authTag);
+        return false;
+    }
+
+    UniqPtrCipherContext cipherContext(EVP_CIPHER_CTX_new());
+    if (!cipherContext)
+    {
+        LogError(logger_) << "Failed to allocate OpenSSL cipher context";
+        SecureClear(decryptionKey);
+        SecureClear(passwordSalt);
+        SecureClear(nonce);
+        SecureClear(authTag);
+        return false;
+    }
+
+    if (!EVP_DecryptInit_ex(cipherContext.get(), EVP_aes_256_gcm(), nullptr, nullptr, nullptr) ||
+        !EVP_CIPHER_CTX_ctrl(cipherContext.get(), EVP_CTRL_GCM_SET_IVLEN, nonce.size(), nullptr) ||
+        !EVP_DecryptInit_ex(cipherContext.get(), nullptr, nullptr,
+                            reinterpret_cast<const unsigned char*>(decryptionKey.constData()),
+                            reinterpret_cast<const unsigned char*>(nonce.constData())) ||
+        !EVP_CIPHER_CTX_ctrl(cipherContext.get(), EVP_CTRL_GCM_SET_TAG, authTag.size(), authTag.data()))
+    {
+        LogError(logger_) << "Failed to initialize AES-256-GCM decryption context";
+        SecureClear(decryptionKey);
+        SecureClear(passwordSalt);
+        SecureClear(nonce);
+        SecureClear(authTag);
+        return false;
+    }
+
+    QByteArray decryptedData;
+    if (!decryptData(encryptedData, decryptedData, cipherContext.get()))
+    {
+        LogError(logger_) << "Authentication failed or decryption error";
+        SecureClear(decryptionKey);
+        SecureClear(passwordSalt);
+        SecureClear(nonce);
+        SecureClear(authTag);
         return false;
     }
 
@@ -312,78 +387,11 @@ bool OpenSslCryptoStrategy::PerformDecryptionOperation(const QString& filePath, 
         SecureClear(decryptionKey);
         SecureClear(passwordSalt);
         SecureClear(nonce);
-        return false;
-    }
-
-    UniqPtrCipherContext cipherContext(EVP_CIPHER_CTX_new());
-    if (!cipherContext)
-    {
-        LogError(logger_) << "Failed to allocate OpenSSL cipher context";
-        outputFile.cancelWriting();
-        SecureClear(decryptionKey);
-        SecureClear(passwordSalt);
-        SecureClear(nonce);
-        return false;
-    }
-
-    if (!EVP_DecryptInit_ex(cipherContext.get(), EVP_aes_256_gcm(), nullptr, nullptr, nullptr) ||
-        !EVP_CIPHER_CTX_ctrl(cipherContext.get(), EVP_CTRL_GCM_SET_IVLEN, nonce.size(), nullptr) ||
-        !EVP_DecryptInit_ex(cipherContext.get(), nullptr, nullptr,
-                            reinterpret_cast<const unsigned char*>(decryptionKey.constData()),
-                            reinterpret_cast<const unsigned char*>(nonce.constData())))
-    {
-        LogError(logger_) << "Failed to initialize AES-256-GCM decryption context";
-        outputFile.cancelWriting();
-        SecureClear(decryptionKey);
-        SecureClear(passwordSalt);
-        SecureClear(nonce);
-        return false;
-    }
-
-    if (!decryptStream(inputFile, outputFile, cipherContext.get(), encryptedPayloadSize))
-    {
-        LogError(logger_) << "Failed during encrypted stream read";
-        outputFile.cancelWriting();
-        SecureClear(decryptionKey);
-        SecureClear(passwordSalt);
-        SecureClear(nonce);
-        return false;
-    }
-
-    QByteArray authTag = inputFile.read(kAesGcmTagSize);
-
-    if (authTag.size() != kAesGcmTagSize ||
-        !EVP_CIPHER_CTX_ctrl(cipherContext.get(), EVP_CTRL_GCM_SET_TAG, authTag.size(), authTag.data()))
-    {
-        LogError(logger_) << "Failed to set authentication tag for decryption";
-        outputFile.cancelWriting();
-        SecureClear(decryptionKey);
-        SecureClear(passwordSalt);
-        SecureClear(nonce);
         SecureClear(authTag);
         return false;
     }
 
-    QByteArray finalChunk(EVP_MAX_BLOCK_LENGTH, 0);
-    int finalLength = 0;
-    if (EVP_DecryptFinal_ex(cipherContext.get(), reinterpret_cast<unsigned char*>(finalChunk.data()), &finalLength) <=
-        0)
-    {
-        LogError(logger_) << "Authentication failed during decrypt finalization";
-        outputFile.cancelWriting();
-        SecureClear(decryptionKey);
-        SecureClear(passwordSalt);
-        SecureClear(nonce);
-        SecureClear(authTag);
-        SecureClear(finalChunk);
-        return false;
-    }
-
-#ifdef _WIN32
-    inputFile.close();
-#endif
-    if ((finalLength > 0 && !writeAll(outputFile, finalChunk.constData(), static_cast<qint64>(finalLength))) ||
-        !outputFile.commit())
+    if (!writeAll(outputFile, decryptedData.constData(), decryptedData.size()) || !outputFile.commit())
     {
         LogError(logger_) << "Failed to write decrypted output file";
         outputFile.cancelWriting();
@@ -391,7 +399,7 @@ bool OpenSslCryptoStrategy::PerformDecryptionOperation(const QString& filePath, 
         SecureClear(passwordSalt);
         SecureClear(nonce);
         SecureClear(authTag);
-        SecureClear(finalChunk);
+        SecureClear(decryptedData);
         return false;
     }
 
@@ -399,7 +407,7 @@ bool OpenSslCryptoStrategy::PerformDecryptionOperation(const QString& filePath, 
     SecureClear(passwordSalt);
     SecureClear(nonce);
     SecureClear(authTag);
-    SecureClear(finalChunk);
+    SecureClear(decryptedData);
 
     return true;
 }

@@ -10,16 +10,28 @@
 #include <logger_factory.hpp>
 #include <recursive_stepper.hpp>
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 namespace
 {
-QString CreateFileWithContent(const QString& path)
+QString CreateFileWithContent(const QString& path, const QString& content = "test")
 {
     QFile file(path);
     EXPECT_TRUE(file.open(QIODevice::WriteOnly | QIODevice::Text));
-    file.write("test");
+    file.write(content.toUtf8());
     file.close();
     return QFileInfo(path).absoluteFilePath();
 }
+
+#ifdef _WIN32
+void SetFileAsSystem(const QString& filePath)
+{
+    SetFileAttributesW(reinterpret_cast<const wchar_t*>(filePath.utf16()),
+                       FILE_ATTRIBUTE_SYSTEM | GetFileAttributesW(reinterpret_cast<const wchar_t*>(filePath.utf16())));
+}
+#endif
 }  // namespace
 
 TEST(RecursiveStepperTest, BuildIndexReturnsAllFilesRecursively)
@@ -70,4 +82,98 @@ TEST(RecursiveStepperTest, BuildIndexReturnsEmptyForExistingDirectoryWithoutFile
     const recursive_stepper::FileSystemIndex index = stepper.BuildIndex();
 
     EXPECT_TRUE(index.isEmpty());
+}
+
+TEST(RecursiveStepperTest, BuildIndexSkipsHiddenFiles)
+{
+    QTemporaryDir tempDir;
+    ASSERT_TRUE(tempDir.isValid());
+
+    QDir root(tempDir.path());
+    const QString visibleFile = CreateFileWithContent(root.filePath("visible.txt"));
+    const QString hiddenFilePath = root.filePath(".hidden");
+
+    QFile hiddenFile(hiddenFilePath);
+    ASSERT_TRUE(hiddenFile.open(QIODevice::WriteOnly));
+    hiddenFile.write("hidden");
+    hiddenFile.close();
+
+    auto logger = logger::GetLogger<logger::AppSysLoggerTag>();
+    recursive_stepper::RecursiveStepper stepper(tempDir.path(), logger);
+
+    const recursive_stepper::FileSystemIndex index = stepper.BuildIndex();
+
+    EXPECT_EQ(index.size(), 1);
+    EXPECT_TRUE(index.contains(visibleFile));
+    EXPECT_FALSE(index.contains(QFileInfo(hiddenFilePath).absoluteFilePath()));
+}
+
+TEST(RecursiveStepperTest, BuildIndexSkipsShortcutFiles)
+{
+    QTemporaryDir tempDir;
+    ASSERT_TRUE(tempDir.isValid());
+
+    QDir root(tempDir.path());
+    const QString regularFile = CreateFileWithContent(root.filePath("regular.txt"));
+    const QString lnkFile = CreateFileWithContent(root.filePath("shortcut.lnk"));
+    const QString desktopFile = CreateFileWithContent(root.filePath("app.desktop"));
+
+    auto logger = logger::GetLogger<logger::AppSysLoggerTag>();
+    recursive_stepper::RecursiveStepper stepper(tempDir.path(), logger);
+
+    const recursive_stepper::FileSystemIndex index = stepper.BuildIndex();
+
+    EXPECT_EQ(index.size(), 1);
+    EXPECT_TRUE(index.contains(regularFile));
+    EXPECT_FALSE(index.contains(QFileInfo(lnkFile).absoluteFilePath()));
+    EXPECT_FALSE(index.contains(QFileInfo(desktopFile).absoluteFilePath()));
+}
+
+TEST(RecursiveStepperTest, BuildIndexSkipsSystemFiles)
+{
+    QTemporaryDir tempDir;
+    ASSERT_TRUE(tempDir.isValid());
+
+    QDir root(tempDir.path());
+    const QString regularFile = CreateFileWithContent(root.filePath("regular.txt"));
+    const QString sysFile = CreateFileWithContent(root.filePath("system.sys"));
+    const QString objFile = CreateFileWithContent(root.filePath("object.o"));
+
+    auto logger = logger::GetLogger<logger::AppSysLoggerTag>();
+    recursive_stepper::RecursiveStepper stepper(tempDir.path(), logger);
+
+    const recursive_stepper::FileSystemIndex index = stepper.BuildIndex();
+
+    EXPECT_EQ(index.size(), 1);
+    EXPECT_TRUE(index.contains(regularFile));
+    EXPECT_FALSE(index.contains(QFileInfo(sysFile).absoluteFilePath()));
+    EXPECT_FALSE(index.contains(QFileInfo(objFile).absoluteFilePath()));
+}
+
+TEST(RecursiveStepperTest, BuildIndexMixedFilesAndDirectories)
+{
+    QTemporaryDir tempDir;
+    ASSERT_TRUE(tempDir.isValid());
+
+    QDir root(tempDir.path());
+    ASSERT_TRUE(root.mkpath("subdir"));
+
+    const QString file1 = CreateFileWithContent(root.filePath("file1.txt"));
+    const QString file2 = CreateFileWithContent(root.filePath("subdir/file2.txt"));
+    const QString file3 = CreateFileWithContent(root.filePath("subdir/.hidden"));
+
+    QFile hiddenFile(root.filePath("subdir/.hidden"));
+    hiddenFile.open(QIODevice::WriteOnly);
+    hiddenFile.write("hidden");
+    hiddenFile.close();
+
+    auto logger = logger::GetLogger<logger::AppSysLoggerTag>();
+    recursive_stepper::RecursiveStepper stepper(tempDir.path(), logger);
+
+    const recursive_stepper::FileSystemIndex index = stepper.BuildIndex();
+
+    EXPECT_EQ(index.size(), 2);
+    EXPECT_TRUE(index.contains(file1));
+    EXPECT_TRUE(index.contains(file2));
+    EXPECT_FALSE(index.contains(QFileInfo(root.filePath("subdir/.hidden")).absoluteFilePath()));
 }
