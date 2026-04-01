@@ -104,3 +104,85 @@ TEST(CryptoManagerTest, DecryptDelegatesToStrategyAndReportsFailure)
     EXPECT_EQ(strategyRaw->lastDecryptFilePath_, QString("/tmp/file.enc"));
     EXPECT_EQ(strategyRaw->lastDecryptPassword_, QString("badpwd"));
 }
+
+TEST(CryptoManagerTest, SetCryptoStrategySwitchesStrategy)
+{
+    QTemporaryDir tempDir;
+    ASSERT_TRUE(tempDir.isValid());
+
+    const QString logPath = tempDir.path() + "/crypto_manager.log";
+    auto logger = CreateTestLogger(logPath);
+
+    auto strategy1 = std::make_unique<FakeCryptoStrategy>(true, true);
+    crypto_manager::CryptoManager manager(std::move(strategy1), logger);
+
+    // Use first strategy
+    bool result = manager.EncryptFile("/tmp/file1.bin", "pwd1");
+    EXPECT_TRUE(result);
+
+    // Change to second strategy
+    auto strategy2 = std::make_unique<FakeCryptoStrategy>(false, false);
+    auto* strategy2Raw = strategy2.get();
+    manager.SetCryptoStrategy(std::move(strategy2));
+
+    // Use second strategy
+    result = manager.EncryptFile("/tmp/file2.bin", "pwd2");
+    EXPECT_FALSE(result);
+    EXPECT_EQ(strategy2Raw->encryptCalls_, 1);
+    EXPECT_EQ(strategy2Raw->lastEncryptFilePath_, QString("/tmp/file2.bin"));
+}
+
+TEST(CryptoManagerTest, SetCryptoStrategyWithMultipleSwitches)
+{
+    QTemporaryDir tempDir;
+    ASSERT_TRUE(tempDir.isValid());
+
+    const QString logPath = tempDir.path() + "/crypto_manager.log";
+    auto logger = CreateTestLogger(logPath);
+
+    auto strategy1 = std::make_unique<FakeCryptoStrategy>(true, true);
+    crypto_manager::CryptoManager manager(std::move(strategy1), logger);
+
+    // Switch to strategy 2
+    auto strategy2 = std::make_unique<FakeCryptoStrategy>(false, false);
+    auto* strategy2Raw = strategy2.get();
+    manager.SetCryptoStrategy(std::move(strategy2));
+
+    // Use strategy 2 for encryption
+    bool result = manager.EncryptFile("/tmp/file.bin", "pwd");
+    EXPECT_FALSE(result);
+    EXPECT_EQ(strategy2Raw->encryptCalls_, 1);
+
+    // Switch to strategy 3
+    auto strategy3 = std::make_unique<FakeCryptoStrategy>(true, true);
+    auto* strategy3Raw = strategy3.get();
+    manager.SetCryptoStrategy(std::move(strategy3));
+
+    // Use strategy 3
+    result = manager.DecryptFile("/tmp/file.enc", "pwd");
+    EXPECT_TRUE(result);
+    EXPECT_EQ(strategy3Raw->decryptCalls_, 1);
+    EXPECT_EQ(strategy2Raw->decryptCalls_, 0);  // Strategy 2 should not be called
+}
+
+TEST(CryptoManagerTest, SetCryptoStrategyIgnoresNullStrategy)
+{
+    QTemporaryDir tempDir;
+    ASSERT_TRUE(tempDir.isValid());
+
+    const QString logPath = tempDir.path() + "/crypto_manager.log";
+    auto logger = CreateTestLogger(logPath);
+
+    auto strategy = std::make_unique<FakeCryptoStrategy>(true, true);
+    auto* strategyRaw = strategy.get();
+    crypto_manager::CryptoManager manager(std::move(strategy), logger);
+
+    // Try to set null strategy (should be ignored)
+    manager.SetCryptoStrategy(nullptr);
+
+    // Original strategy should still work
+    const bool result = manager.EncryptFile("/tmp/file.bin", "pwd");
+    EXPECT_TRUE(result);
+    EXPECT_EQ(strategyRaw->encryptCalls_, 1);
+}
+
