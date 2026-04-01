@@ -35,4 +35,16 @@ bool CryptoManager::DecryptFile(const QString& filePath, const QString& password
     return result;
 }
 
+void CryptoManager::SetCryptoStrategy(std::unique_ptr<ICryptoStrategy> cryptoStrategy)
+{
+    if (!cryptoStrategy)
+    {
+        LogError(logger_) << "Attempt to set null crypto strategy";
+        return;
+    }
+
+    cryptoStrategy_ = std::move(cryptoStrategy);
+    LogInfo(logger_) << "Crypto strategy changed successfully";
+}
+
 }  // namespace crypto_manager

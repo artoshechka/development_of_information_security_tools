@@ -5,9 +5,12 @@
 #define GUID_576EFE32_B524_4693_8D65_155FFE5E24EC
 
 #include <QString>
+#include <memory>
 
 namespace crypto_manager
 {
+///@brief Forward declaration
+class ICryptoStrategy;
 /// @brief Интерфейс менеджера криптографических операций.
 class ICryptoManager
 {
@@ -26,6 +29,11 @@ class ICryptoManager
     /// @param[in] password Пароль, используемый для генерации ключа.
     /// @return `true`, если операция выполнена успешно, иначе `false`.
     virtual bool DecryptFile(const QString& filePath, const QString& password) = 0;
+
+    /// @brief Устанавливает новую криптографическую стратегию во время выполнения.
+    /// @param[in] cryptoStrategy Новая стратегия криптографии.
+    /// @note Позволяет менять алгоритм шифрования на лету без пересоздания менеджера.
+    virtual void SetCryptoStrategy(std::unique_ptr<ICryptoStrategy> cryptoStrategy) = 0;
 };
 
 }  // namespace crypto_manager
