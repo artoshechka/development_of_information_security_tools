@@ -92,6 +92,7 @@ classDiagram
         <<interface>>
         +EncryptFile(filePath, password)
         +DecryptFile(filePath, password)
+        +SetCryptoStrategy(cryptoStrategy)
     }
 
     class CryptoManager {
@@ -100,6 +101,7 @@ classDiagram
         +CryptoManager(cryptoStrategy, const shared_ptr~ILogger~& logger)
         +EncryptFile(filePath, password)
         +DecryptFile(filePath, password)
+        +SetCryptoStrategy(cryptoStrategy)
     }
 
     class CryptoStrategyFactory {

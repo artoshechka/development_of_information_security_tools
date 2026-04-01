@@ -32,6 +32,11 @@ class CryptoManager final : public ICryptoManager
     /// @return `true`, если операция завершена успешно, иначе `false`.
     bool DecryptFile(const QString& filePath, const QString& password) override;
 
+    /// @brief Устанавливает новую криптографическую стратегию.
+    /// @param[in] cryptoStrategy Новая стратегия криптографии.
+    /// @note Позволяет менять алгоритм шифрования на лету.
+    void SetCryptoStrategy(std::unique_ptr<ICryptoStrategy> cryptoStrategy) override;
+
    private:
     std::unique_ptr<ICryptoStrategy> cryptoStrategy_;  //< Стратегия криптографии
     std::shared_ptr<logger::ILogger> logger_;          //< Логгер
