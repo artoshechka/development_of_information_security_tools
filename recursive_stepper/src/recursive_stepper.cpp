@@ -68,14 +68,14 @@ bool RecursiveStepper::ShouldSkipFile(const QFileInfo& fileInfo) const
     return false;
 }
 
-FileSystemIndex RecursiveStepper::BuildIndex() const
+FileSystemIndex RecursiveStepper::GetPaths() const
 {
-    FileSystemIndex index;
+    FileSystemIndex paths;
 
     if (!QDir(dirPath_).exists())
     {
         LogError(logger_) << "RecursiveStepper target directory does not exist: " << dirPath_;
-        return index;
+        return paths;
     }
 
     QDirIterator it(dirPath_, QDir::AllEntries | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
@@ -88,9 +88,9 @@ FileSystemIndex RecursiveStepper::BuildIndex() const
 
         if (info.isFile() && !ShouldSkipFile(info))
         {
-            index.append(info.absoluteFilePath());
+            paths.append(info.absoluteFilePath());
         }
     }
 
-    return index;
+    return paths;
 }

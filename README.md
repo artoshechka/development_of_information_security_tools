@@ -119,7 +119,7 @@ classDiagram
         -QString dirPath_
         -logger_ : shared_ptr~ILogger~
         +RecursiveStepper(dirPath, const shared_ptr~ILogger~& logger)
-        +BuildIndex() FileSystemIndex
+        +GetPaths() FileSystemIndex
     }
 
     ILogger <|.. ThreadSafeLogger
@@ -210,6 +210,8 @@ cmake .. && cmake --build .
 
 После запуска программа запросит пароль в консоли.
 
+Ограничение на пароль: не более 100 символов.
+
 </details>
 
 <details>
@@ -232,6 +234,8 @@ cmake --build .
 ```
 
 После запуска программа запросит пароль в консоли.
+
+Ограничение на пароль: не более 100 символов.
 
 </details>
 
