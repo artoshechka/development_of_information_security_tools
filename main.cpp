@@ -5,7 +5,6 @@
 #include <QDir>
 #include <QTextStream>
 #include <crypto_manager_factory.hpp>
-#include <limits>
 #include <logger_factory.hpp>
 #include <logger_macros.hpp>
 #include <memory>
@@ -24,9 +23,14 @@
 
 namespace
 {
+constexpr int kMaxPasswordLength = 100;
+
 /// @brief Скрытое чтение пароля из консоли
-static QString ReadPassword(QTextStream& cin, QTextStream& cout)
+static QString ReadPassword()
 {
+    QTextStream cin(stdin);
+    QTextStream cout(stdout);
+
     cout << "Enter password: ";
     cout.flush();
 
@@ -99,9 +103,6 @@ static void SecureClear(QString& data)
 /// @return код завершения приложения
 int main(int argc, char* argv[])
 {
-    QTextStream cin(stdin);
-    QTextStream cout(stdout);
-
     const auto appLogger = logger::GetLogger<logger::AppLoggerTag>();
     const auto appSysLogger = logger::GetLogger<logger::AppSysLoggerTag>();
 
@@ -139,7 +140,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    QString password = ReadPassword(cin, cout);
+    QString password = ReadPassword();
 
     if (password.isEmpty())
     {
@@ -147,9 +148,9 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if (password.size() > std::numeric_limits<int>::max() / 4)
+    if (password.size() > kMaxPasswordLength)
     {
-        LogError(appLogger) << "Password is too long";
+        LogError(appLogger) << "Password is too long. Max length: " << kMaxPasswordLength;
         SecureClear(password);
         return 1;
     }
@@ -171,7 +172,7 @@ int main(int argc, char* argv[])
 
     LogInfo(appLogger) << "Processing started. Mode: " << mode << ", Path: " << path;
 
-    for (const auto& file : stepper->BuildIndex())
+    for (const auto& file : stepper->GetPaths())
     {
         bool result = false;
 

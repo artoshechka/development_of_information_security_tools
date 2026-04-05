@@ -34,7 +34,7 @@ void SetFileAsSystem(const QString& filePath)
 #endif
 }  // namespace
 
-TEST(RecursiveStepperTest, BuildIndexReturnsAllFilesRecursively)
+TEST(RecursiveStepperTest, GetPathsReturnsAllFilesRecursively)
 {
     QTemporaryDir tempDir;
     ASSERT_TRUE(tempDir.isValid());
@@ -50,7 +50,7 @@ TEST(RecursiveStepperTest, BuildIndexReturnsAllFilesRecursively)
     auto logger = logger::GetLogger<logger::AppSysLoggerTag>();
     recursive_stepper::RecursiveStepper stepper(tempDir.path(), logger);
 
-    const recursive_stepper::FileSystemIndex index = stepper.BuildIndex();
+    const recursive_stepper::FileSystemIndex index = stepper.GetPaths();
 
     EXPECT_EQ(index.size(), 3);
     EXPECT_TRUE(index.contains(file1));
@@ -58,17 +58,17 @@ TEST(RecursiveStepperTest, BuildIndexReturnsAllFilesRecursively)
     EXPECT_TRUE(index.contains(file3));
 }
 
-TEST(RecursiveStepperTest, BuildIndexReturnsEmptyForMissingDirectory)
+TEST(RecursiveStepperTest, GetPathsReturnsEmptyForMissingDirectory)
 {
     auto logger = logger::GetLogger<logger::AppSysLoggerTag>();
     recursive_stepper::RecursiveStepper stepper("/path/that/does/not/exist", logger);
 
-    const recursive_stepper::FileSystemIndex index = stepper.BuildIndex();
+    const recursive_stepper::FileSystemIndex index = stepper.GetPaths();
 
     EXPECT_TRUE(index.isEmpty());
 }
 
-TEST(RecursiveStepperTest, BuildIndexReturnsEmptyForExistingDirectoryWithoutFiles)
+TEST(RecursiveStepperTest, GetPathsReturnsEmptyForExistingDirectoryWithoutFiles)
 {
     QTemporaryDir tempDir;
     ASSERT_TRUE(tempDir.isValid());
@@ -79,12 +79,12 @@ TEST(RecursiveStepperTest, BuildIndexReturnsEmptyForExistingDirectoryWithoutFile
     auto logger = logger::GetLogger<logger::AppSysLoggerTag>();
     recursive_stepper::RecursiveStepper stepper(tempDir.path(), logger);
 
-    const recursive_stepper::FileSystemIndex index = stepper.BuildIndex();
+    const recursive_stepper::FileSystemIndex index = stepper.GetPaths();
 
     EXPECT_TRUE(index.isEmpty());
 }
 
-TEST(RecursiveStepperTest, BuildIndexSkipsHiddenFiles)
+TEST(RecursiveStepperTest, GetPathsSkipsHiddenFiles)
 {
     QTemporaryDir tempDir;
     ASSERT_TRUE(tempDir.isValid());
@@ -101,14 +101,14 @@ TEST(RecursiveStepperTest, BuildIndexSkipsHiddenFiles)
     auto logger = logger::GetLogger<logger::AppSysLoggerTag>();
     recursive_stepper::RecursiveStepper stepper(tempDir.path(), logger);
 
-    const recursive_stepper::FileSystemIndex index = stepper.BuildIndex();
+    const recursive_stepper::FileSystemIndex index = stepper.GetPaths();
 
     EXPECT_EQ(index.size(), 1);
     EXPECT_TRUE(index.contains(visibleFile));
     EXPECT_FALSE(index.contains(QFileInfo(hiddenFilePath).absoluteFilePath()));
 }
 
-TEST(RecursiveStepperTest, BuildIndexSkipsShortcutFiles)
+TEST(RecursiveStepperTest, GetPathsSkipsShortcutFiles)
 {
     QTemporaryDir tempDir;
     ASSERT_TRUE(tempDir.isValid());
@@ -121,7 +121,7 @@ TEST(RecursiveStepperTest, BuildIndexSkipsShortcutFiles)
     auto logger = logger::GetLogger<logger::AppSysLoggerTag>();
     recursive_stepper::RecursiveStepper stepper(tempDir.path(), logger);
 
-    const recursive_stepper::FileSystemIndex index = stepper.BuildIndex();
+    const recursive_stepper::FileSystemIndex index = stepper.GetPaths();
 
     EXPECT_EQ(index.size(), 1);
     EXPECT_TRUE(index.contains(regularFile));
@@ -129,7 +129,7 @@ TEST(RecursiveStepperTest, BuildIndexSkipsShortcutFiles)
     EXPECT_FALSE(index.contains(QFileInfo(desktopFile).absoluteFilePath()));
 }
 
-TEST(RecursiveStepperTest, BuildIndexSkipsSystemFiles)
+TEST(RecursiveStepperTest, GetPathsSkipsSystemFiles)
 {
     QTemporaryDir tempDir;
     ASSERT_TRUE(tempDir.isValid());
@@ -142,7 +142,7 @@ TEST(RecursiveStepperTest, BuildIndexSkipsSystemFiles)
     auto logger = logger::GetLogger<logger::AppSysLoggerTag>();
     recursive_stepper::RecursiveStepper stepper(tempDir.path(), logger);
 
-    const recursive_stepper::FileSystemIndex index = stepper.BuildIndex();
+    const recursive_stepper::FileSystemIndex index = stepper.GetPaths();
 
     EXPECT_EQ(index.size(), 1);
     EXPECT_TRUE(index.contains(regularFile));
@@ -150,7 +150,7 @@ TEST(RecursiveStepperTest, BuildIndexSkipsSystemFiles)
     EXPECT_FALSE(index.contains(QFileInfo(objFile).absoluteFilePath()));
 }
 
-TEST(RecursiveStepperTest, BuildIndexMixedFilesAndDirectories)
+TEST(RecursiveStepperTest, GetPathsMixedFilesAndDirectories)
 {
     QTemporaryDir tempDir;
     ASSERT_TRUE(tempDir.isValid());
@@ -170,7 +170,7 @@ TEST(RecursiveStepperTest, BuildIndexMixedFilesAndDirectories)
     auto logger = logger::GetLogger<logger::AppSysLoggerTag>();
     recursive_stepper::RecursiveStepper stepper(tempDir.path(), logger);
 
-    const recursive_stepper::FileSystemIndex index = stepper.BuildIndex();
+    const recursive_stepper::FileSystemIndex index = stepper.GetPaths();
 
     EXPECT_EQ(index.size(), 2);
     EXPECT_TRUE(index.contains(file1));

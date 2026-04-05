@@ -117,7 +117,7 @@ classDiagram
         -QString dirPath_
         -logger_ : shared_ptr~ILogger~
         +RecursiveStepper(dirPath, const shared_ptr~ILogger~& logger)
-        +BuildIndex() FileSystemIndex
+        +GetPaths() FileSystemIndex
     }
 
     ILogger <|.. ThreadSafeLogger

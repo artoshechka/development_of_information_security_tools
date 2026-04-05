@@ -27,10 +27,10 @@ class RecursiveStepper
     /// @param[in] logger Логгер для системных ошибок.
     RecursiveStepper(const QString& dirPath, const std::shared_ptr<logger::ILogger>& logger) noexcept;
 
-    /// @brief Строит индекс файловой системы.
-    /// @return Список путей ко всем найденным файлам.
+    /// @brief Возвращает пути ко всем найденным файлам.
+    /// @return Список путей к найденным файлам.
     /// @note Пропускает скрытые файлы, ярлыки и системные файлы на всех платформах.
-    FileSystemIndex BuildIndex() const;
+    FileSystemIndex GetPaths() const;
 
    private:
     /// @brief Проверяет, нужно ли пропустить файл.
